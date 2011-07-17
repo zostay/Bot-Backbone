@@ -3,9 +3,9 @@ use v5.10;
 use Moose;
 
 use List::MoreUtils qw( all );
-use MooseX::Types::Moose qw( ArrayRef Object );
+use MooseX::Types::Moose qw( ArrayRef CodeRef Object );
 use MooseX::Types -declare => [ qw(
-    Dispatcher
+    PredicateList
     ServiceList
 ) ];
 use Scalar::Util qw( blessed );
@@ -16,5 +16,8 @@ class_type 'Bot::Backbone::Role::Service';
 subtype ServiceList,
     as ArrayRef[Object],
     where { all { blessed $_ and $_->does('Bot::Backbone::Role::Service') } @$_ };
+
+subtype PredicateList,
+    as ArrayRef[CodeRef];
 
 __PACKAGE__->meta->make_immutable;

@@ -6,6 +6,9 @@ use Moose::Exporter;
 use Bot::Backbone::Meta::Class;
 use Bot::Backbone::Dispatcher;
 
+our $DEBUG = 1;
+sub debug { warn @_, "\n" if $DEBUG }
+
 # ABSTRACT: Extensible framework for building bots
 
 =head1 SYNOPSIS
@@ -56,7 +59,7 @@ use Bot::Backbone::Dispatcher;
       command '!time' => respond { DateTime->now->format_cldr('ddd, MMM d, yyyy @ hh:mm:ss') };
 
       # Basic echo command, with arguments
-      command '!echo' => followed_by { 
+      command '!echo' => given_parameters { 
           argument echo_this => ( matching => qr/.*/ ); 
       } respond {
           my ($self, $message) = @_; 
@@ -166,7 +169,7 @@ to be defined as needed.
 
 Moose::Exporter->setup_import_methods(
     with_meta => [ qw( dispatcher service ) ],
-    as_is     => [ qw( command followed_by argument as respond ) ],
+    as_is     => [ qw( command given_parameters argument as respond ) ],
     also      => 'Moose',
 );
 
@@ -220,6 +223,7 @@ sub dispatcher($$) {
         $code->();
     }
 
+    debug("add_dispatcher($name, ...)");
     $meta->add_dispatcher($name, $dispatcher);
 }
 
@@ -246,22 +250,26 @@ sub command($$) {
         my $message = shift;
 
         return $message->set_bookmark_do(sub {
-            if ($message->match_next(qr{$qname\b})) {
+            if ($message->match_next(qr{$qname(?=\s|\z)})) {
+                debug("matched command $name");
                 $message->add_flag('command');
                 my $result = $code->($message);
 
                 return $result;
             }
 
+            debug("unmatched command $name");
             return '';
         });
     };
 
     if (defined wantarray) {
-        return $code;
+        debug("sub-command $name");
+        return $new_code;
     }
     else {
-        $dispatcher->add_predicate($code);
+        debug("command $name");
+        $dispatcher->add_predicate($new_code);
     }
 }
 
@@ -292,9 +300,9 @@ if no command has been matched so far for the current message.
 #     }
 # }
 
-=head2 followed_by
+=head2 given_parameters
 
-  followed_by { argument $name => %config; ... } ...
+  given_parameters { argument $name => %config; ... } ...
 
 This is used in conjunction with C<argument> to define arguments expected to
 come next. Each argument is separated by whitespace.
@@ -304,8 +312,9 @@ TODO More detail is needed on what can go into C<%config>.
 =cut
 
 our $WITH_ARGS;
-sub followed_by(&$) {
+sub given_parameters(&$) {
     my ($arg_code, $code) = @_;
+    my $dispatcher = $_;
 
     my @args;
     {
@@ -318,13 +327,15 @@ sub followed_by(&$) {
 
         return $message->set_bookmark_do(sub {
             for my $arg (@args) {
-                my ($name, $config) = @_;
+                my ($name, $config) = @$arg;
                 my $match = $config->{match};
 
                 if (my $value = $message->match_next(qr{$match})) {
+                    debug("matched argument $name: qr{$match}");
                     $message->set_parameter($name => $value);
                 }
                 else {
+                    debug("unmatched argument $name: qr{$match}");
                     return '';
                 }
             }
@@ -332,6 +343,15 @@ sub followed_by(&$) {
             return 1;
         });
     };
+
+    if (defined wantarray) {
+        debug("sub-given_parameters: ", join ', ',  map { $_->[0] } @args);
+        return $new_code;
+    }
+    else {
+        debug("given_parameters: ", join ', ', map { $_->[0] } @args);
+        $dispatcher->add_predicate($new_code);
+    }
 }
 
 sub argument($@) {
@@ -428,13 +448,15 @@ to the user and dispatching will continue as if the predicate had not matched.
 
 sub respond(&) { 
     my $code = shift;
+    my $dispatcher = $_;
 
-    return sub {
+    my $new_code = sub {
         my $message = shift;
 
         my @responses = $code->($message);
         if (@responses) {
             for my $response (@responses) {
+                debug("respond: $response");
                 $message->reply($response);
             }
 
@@ -443,6 +465,15 @@ sub respond(&) {
 
         return '';
     };
+
+    if (defined wantarray) {
+        debug("sub-response");
+        return $new_code;
+    }
+    else {
+        debug("response");
+        $dispatcher->add_predicate($new_code);
+    }
 }
 
 =head2 respond_or_stop

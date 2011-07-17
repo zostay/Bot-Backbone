@@ -2,8 +2,6 @@ package Bot::Backbone::Role::Dispatch;
 use v5.10;
 use Moose::Role;
 
-use Bot::Backbone::Types qw( Dispatcher );
-
 use namespace::autoclean;
 
 has dispatcher_name => (

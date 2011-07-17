@@ -50,20 +50,32 @@ sub got_console_input {
 
     return unless defined $input;
 
+    my $term = $self->term;
     if ($input eq '/quit') {
+        $term->addhistory($input);
         return;
     }
     elsif ($input =~ m{^/join\s+(.*)}) {
+        $term->addhistory($input);
         $self->current_room($1);
         $input = '';
     }
     elsif ($self->has_dispatcher) {
-        my $message = Bot::Backbone::Message->new($input);
+        my $message = Bot::Backbone::Message->new({
+            from => Bot::Backbone::Identity->new(
+                username => '(console)',
+                nickname => '(console)',
+            ),
+            to   => undef,
+            text => $input,
+        });
         $self->dispatch_message($message);
     }
 
-    my $term = $self->term;
-    $term->put($input) if $input ne '';
+    if ($input ne '') {
+        $term->addhistory($input);
+        $term->put($input);
+    }
     $term->get($self->prompt);
 }
 
