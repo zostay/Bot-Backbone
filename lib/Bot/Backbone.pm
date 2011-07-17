@@ -6,7 +6,7 @@ use Moose::Exporter;
 use Bot::Backbone::Meta::Class;
 use Bot::Backbone::Dispatcher;
 
-our $DEBUG = 1;
+our $DEBUG = '';
 sub debug { warn @_, "\n" if $DEBUG }
 
 # ABSTRACT: Extensible framework for building bots
