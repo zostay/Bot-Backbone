@@ -2,9 +2,11 @@ package Bot::Backbone::Bot;
 use v5.10;
 use Moose;
 
+use Bot::Backbone::Types qw( ServiceList );
+
 has services => (
     is          => 'ro',
-    isa         => 'ArrayRef',
+    isa         => ServiceList,
     required    => 1,
     default     => sub { [] },
     traits      => [ 'Array' ],

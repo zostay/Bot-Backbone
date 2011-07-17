@@ -2,8 +2,12 @@ package Bot::Backbone::Service::ConsoleChat;
 use v5.10;
 use Moose;
 
-with 'Bot::Backbone::Service';
+with qw(
+    Bot::Backbone::Role::Service
+    Bot::Backbone::Role::Dispatch
+);
 
+use Bot::Backbone::Message;
 use POE qw( Wheel::ReadLine );
 
 has term => (
@@ -22,7 +26,7 @@ sub _build_term {
 };
 
 has current_room => (
-    is          => 'ro',
+    is          => 'rw',
     isa         => 'Str',
     required    => 1,
     default     => '(none)',
@@ -46,8 +50,20 @@ sub got_console_input {
 
     return unless defined $input;
 
+    if ($input eq '/quit') {
+        return;
+    }
+    elsif ($input =~ m{^/join\s+(.*)}) {
+        $self->current_room($1);
+        $input = '';
+    }
+    elsif ($self->has_dispatcher) {
+        my $message = Bot::Backbone::Message->new($input);
+        $self->dispatch_message($message);
+    }
+
     my $term = $self->term;
-    $term->put($input);
+    $term->put($input) if $input ne '';
     $term->get($self->prompt);
 }
 

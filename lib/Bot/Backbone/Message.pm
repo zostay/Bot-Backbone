@@ -1,4 +1,4 @@
-package Bot::Backbone::Mesage;
+package Bot::Backbone::Message;
 use v5.10;
 use Moose;
 
@@ -6,14 +6,14 @@ use Moose;
 
 has from => (
     is          => 'rw',
-    isa         => 'Bot::Backbone::Person',
-    required    => 1,
+    isa         => 'Bot::Backbone::Identity',
+    # required    => 1,
 );
 
 has to => (
     is          => 'rw',
-    isa         => 'Bot::Backbone::Person',
-    required    => 1,
+    isa         => 'Bot::Backbone::Identity',
+    # required    => 1,
 );
 
 has text => (
@@ -28,6 +28,15 @@ has flags => (
     required    => 1,
     default     => sub { +{} },
 );
+
+around BUILDARGS => sub {
+    my $next = shift;
+    my $self = shift;
+
+    return $self->$next(@_) unless @_ == 1;;
+
+    return { text => $_[0] };
+};
 
 sub add_flag     { shift->flags->{$_} = 1 for @_ } 
 sub add_flags    { shift->flags->{$_} = 1 for @_ }

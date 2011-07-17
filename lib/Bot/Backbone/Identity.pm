@@ -1,8 +1,8 @@
-package Bot::Backbone::Person;
+package Bot::Backbone::Identity;
 use v5.10;
 use Moose;
 
-# ABSTRACT: Describes a person sending or receiving a message
+# ABSTRACT: Describes an account sending or receiving a message
 
 has username => (
     is          => 'rw',

@@ -15,4 +15,10 @@ has predicates => (
     },
 );
 
+sub dispatch_message {
+    my ($self, $message) = @_;
+
+    warn "Hello world!\n";
+}
+
 __PACKAGE__->meta->make_immutable;

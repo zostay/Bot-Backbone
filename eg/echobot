@@ -4,8 +4,9 @@ use v5.10;
 use Bot::Backbone;
 
 service chat_bot => (
-    service => 'ConsoleChat',
-    name    => 'echo',
+    service    => 'ConsoleChat',
+    name       => 'echo',
+    dispatcher => 'default',
 );
 
 dispatcher default => as {

@@ -1,4 +1,4 @@
-package Bot::Backbone::Service;
+package Bot::Backbone::Role::Service;
 use Moose::Role;
 
 requires 'initialize';
