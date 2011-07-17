@@ -169,7 +169,7 @@ to be defined as needed.
 
 Moose::Exporter->setup_import_methods(
     with_meta => [ qw( dispatcher service ) ],
-    as_is     => [ qw( command given_parameters argument as respond ) ],
+    as_is     => [ qw( command given_parameters parameter as respond ) ],
     also      => 'Moose',
 );
 
@@ -340,7 +340,7 @@ sub given_parameters(&$) {
                 }
             }
 
-            return 1;
+            return $code->($message);
         });
     };
 
@@ -354,7 +354,7 @@ sub given_parameters(&$) {
     }
 }
 
-sub argument($@) {
+sub parameter($@) {
     my ($name, %config) = @_;
     push @$WITH_ARGS, [ $name, \%config ];
 }
@@ -453,10 +453,11 @@ sub respond(&) {
     my $new_code = sub {
         my $message = shift;
 
+        debug("getting responses");
         my @responses = $code->($message);
         if (@responses) {
             for my $response (@responses) {
-                debug("respond: $response");
+                debug("responding: $response");
                 $message->reply($response);
             }
 

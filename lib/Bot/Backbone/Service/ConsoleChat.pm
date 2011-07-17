@@ -5,6 +5,7 @@ use Moose;
 with qw(
     Bot::Backbone::Role::Service
     Bot::Backbone::Role::Dispatch
+    Bot::Backbone::Role::Chat
 );
 
 use Bot::Backbone::Message;
@@ -62,6 +63,7 @@ sub got_console_input {
     }
     elsif ($self->has_dispatcher) {
         my $message = Bot::Backbone::Message->new({
+            chat => $self,
             from => Bot::Backbone::Identity->new(
                 username => '(console)',
                 nickname => '(console)',
@@ -88,6 +90,11 @@ sub initialize {
         ],
     );
     POE::Kernel->run;
+}
+
+sub send_reply {
+    my ($self, $message, $text) = @_;
+    $self->term->put($self->name . ': ' . $text);
 }
 
 __PACKAGE__->meta->make_immutable;

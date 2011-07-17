@@ -11,10 +11,10 @@ service chat_bot => (
 
 dispatcher default => as {
     command '!echo' => given_parameters { 
-        argument echo_this => ( match => qr/.+/ );
+        parameter echo_this => ( match => qr/.+/ );
     } respond {
-        my ($self, $message) = @_;
-        $message->arguments->{echo_this};
+        my $message = shift;
+        $message->parameters->{echo_this};
     };
 };
 

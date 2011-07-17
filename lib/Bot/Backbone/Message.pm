@@ -6,6 +6,13 @@ use Bot::Backbone::Identity;
 
 # ABSTRACT: Describes a message or response
 
+has chat => (
+    is          => 'ro',
+    does        => 'Bot::Backbone::Role::Chat',
+    required    => 1,
+    weak_ref    => 1,
+);
+
 has from => (
     is          => 'rw',
     isa         => 'Bot::Backbone::Identity',
@@ -65,6 +72,7 @@ sub has_flags    { all { shift->flags->{$_} } @_ }
 sub set_bookmark {
     my $self = shift;
     my $bookmark = Bot::Backbone::Message->new(
+        chat => $self->chat,
         to   => $self->to,
         from => $self->from,
         text => $self->text,
@@ -91,12 +99,18 @@ sub match_next {
     my ($self, $regex) = @_;
 
     my $text = $self->text;
-    if (my ($value) = $text =~ s/^($regex)\s*//) {
+    if ($text =~ s/^($regex)\s*//) {
+        my $value = $1;
         $self->text($text);
         return $value;
     }
 
     return;
+}
+
+sub reply {
+    my ($self, $text) = @_;
+    $self->chat->send_reply($self, $text);
 }
 
 __PACKAGE__->meta->make_immutable;
