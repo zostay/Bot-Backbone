@@ -25,6 +25,12 @@ has to => (
     required    => 1,
 );
 
+has group => (
+    is          => 'rw',
+    isa         => 'Maybe[Str]',
+    required    => 1,
+);
+
 has text => (
     is          => 'rw',
     isa         => 'Str',
@@ -62,6 +68,9 @@ has parameters => (
     },
 );
 
+sub is_group  { defined shift->group }
+sub is_direct { not defined shift->group }
+
 sub add_flag     { shift->flags->{$_} = 1 for @_ } 
 sub add_flags    { shift->flags->{$_} = 1 for @_ }
 sub remove_flag  { delete shift->flags->{$_} for @_ }
@@ -72,10 +81,11 @@ sub has_flags    { all { shift->flags->{$_} } @_ }
 sub set_bookmark {
     my $self = shift;
     my $bookmark = Bot::Backbone::Message->new(
-        chat => $self->chat,
-        to   => $self->to,
-        from => $self->from,
-        text => $self->text,
+        chat  => $self->chat,
+        to    => $self->to,
+        from  => $self->from,
+        group => $self->group,
+        text  => $self->text,
     );
     $self->_set_bookmark($bookmark);
 }
@@ -85,6 +95,7 @@ sub restore_bookmark {
     my $bookmark = $self->_restore_bookmark;
     $self->to($bookmark->to);
     $self->from($bookmark->from);
+    $self->group($bookmark->group);
     $self->text($bookmark->text);
 }
 

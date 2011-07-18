@@ -8,11 +8,11 @@ has services => (
     is          => 'ro',
     isa         => ServiceList,
     required    => 1,
-    default     => sub { [] },
-    traits      => [ 'Array' ],
+    default     => sub { +{} },
+    traits      => [ 'Hash' ],
     handles     => {
-        add_service   => 'push',
-        list_services => 'elements',
+        add_service   => 'set',
+        list_services => 'values',
     },
 );
 
@@ -42,7 +42,7 @@ sub construct_services {
             bot  => $self,
         );
 
-        $self->add_service($service);
+        $self->add_service($name, $service);
     }
 }
 

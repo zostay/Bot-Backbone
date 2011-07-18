@@ -6,8 +6,20 @@ use Bot::Backbone;
 service chat_bot => (
     service    => 'ConsoleChat',
     name       => 'echo',
+);
+
+service group_foo => (
+    service    => 'GroupChat',
+    chat       => 'chat_bot',
+    group      => 'foo',
     dispatcher => 'default',
 );
+
+# service instant_message => (
+#     service    => 'DirectChat',
+#     chat       => 'chat_bot',
+#     dispatcher => 'default',
+# );
 
 dispatcher default => as {
     command '!echo' => given_parameters { 

@@ -6,6 +6,7 @@ with qw(
     Bot::Backbone::Role::Service
     Bot::Backbone::Role::Dispatch
     Bot::Backbone::Role::Chat
+    Bot::Backbone::Role::GroupJoiner
 );
 
 use Bot::Backbone::Message;
@@ -26,7 +27,7 @@ sub _build_term {
     );
 };
 
-has current_room => (
+has current_group => (
     is          => 'rw',
     isa         => 'Str',
     required    => 1,
@@ -35,7 +36,7 @@ has current_room => (
 
 sub prompt {
     my $self = shift;
-    return $self->current_room . ' > ';
+    return $self->current_group . ' > ';
 }
 
 sub _start {
@@ -56,22 +57,56 @@ sub got_console_input {
         $term->addhistory($input);
         return;
     }
-    elsif ($input =~ m{^/join\s+(.*)}) {
+    elsif ($input =~ m{^/join\s+(\w+)}) {
         $term->addhistory($input);
-        $self->current_room($1);
+        $self->current_group($1);
         $input = '';
     }
-    elsif ($self->has_dispatcher) {
+    elsif ($input =~ m{^/leave$}) {
+        $term->addhistory($input);
+        $self->current_group('(none)');
+        $input = '';
+    }
+    elsif ($input =~ m{^/dm\s+(.+)}) {
+        $term->addhistory($input);
+
         my $message = Bot::Backbone::Message->new({
-            chat => $self,
-            from => Bot::Backbone::Identity->new(
+            chat  => $self,
+            from  => Bot::Backbone::Identity->new(
                 username => '(console)',
                 nickname => '(console)',
             ),
-            to   => undef,
-            text => $input,
+            to    => undef,
+            group => undef,
+            text  => $input,
         });
-        $self->dispatch_message($message);
+
+        $self->resend_message($message);
+
+        if ($self->has_dispatcher) {
+            $self->dispatch_message($message);
+        }
+    }
+    else {
+        my $group = $self->current_group;
+           $group = undef if $group eq '(none)';
+
+        my $message = Bot::Backbone::Message->new({
+            chat  => $self,
+            from  => Bot::Backbone::Identity->new(
+                username => '(console)',
+                nickname => '(console)',
+            ),
+            to    => undef,
+            group => $group,
+            text  => $input,
+        });
+
+        $self->resend_message($message);
+
+        if ($self->has_dispatcher) {
+            $self->dispatch_message($message);
+        }
     }
 
     if ($input ne '') {
@@ -91,6 +126,8 @@ sub initialize {
     );
     POE::Kernel->run;
 }
+
+sub join_group { }
 
 sub send_reply {
     my ($self, $message, $text) = @_;
