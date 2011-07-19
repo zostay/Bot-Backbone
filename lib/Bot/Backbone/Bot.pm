@@ -3,6 +3,7 @@ use v5.10;
 use Moose;
 
 use Bot::Backbone::Types qw( ServiceList );
+use POE;
 
 has services => (
     is          => 'ro',
@@ -51,6 +52,8 @@ sub run {
 
     $self->construct_services;
     $_->initialize for ($self->list_services);
+
+    POE::Kernel->run;
 }
 
 __PACKAGE__->meta->make_immutable;

@@ -4,8 +4,9 @@ use v5.10;
 use Bot::Backbone;
 
 service chat_bot => (
-    service    => 'ConsoleChat',
-    name       => 'echo',
+    service      => 'ConsoleChat',
+    bot_username => 'echo',
+    bot_nickname => 'echo',
 );
 
 service group_foo => (
@@ -15,11 +16,11 @@ service group_foo => (
     dispatcher => 'default',
 );
 
-# service instant_message => (
-#     service    => 'DirectChat',
-#     chat       => 'chat_bot',
-#     dispatcher => 'default',
-# );
+service instant_message => (
+    service    => 'DirectChat',
+    chat       => 'chat_bot',
+    dispatcher => 'default',
+);
 
 dispatcher default => as {
     command '!echo' => given_parameters { 

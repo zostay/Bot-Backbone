@@ -28,10 +28,15 @@ sub _build_chat {
     die "no such chat as ", $self->chat_name, "\n"
         unless defined $chat;
 
-    $chat->register_chat_consumer($self);
     return $chat;
 }
 
 requires 'receive_message';
+
+before initialize => sub {
+    my $self = shift;
+    my $chat = $self->chat if $self->has_chat;
+    $chat->register_chat_consumer($self);
+};
 
 1;

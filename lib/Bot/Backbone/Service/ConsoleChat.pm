@@ -19,6 +19,18 @@ has term => (
     lazy_build  => 1,
 );
 
+has bot_username => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+);
+
+has bot_nickname => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+);
+
 sub _build_term { 
     my $self = shift;
     POE::Wheel::ReadLine->new(
@@ -67,7 +79,7 @@ sub got_console_input {
         $self->current_group('(none)');
         $input = '';
     }
-    elsif ($input =~ m{^/dm\s+(.+)}) {
+    elsif ($input =~ s{^/dm\s+(.+)}{$1}) {
         $term->addhistory($input);
 
         my $message = Bot::Backbone::Message->new({
@@ -76,7 +88,10 @@ sub got_console_input {
                 username => '(console)',
                 nickname => '(console)',
             ),
-            to    => undef,
+            to    => Bot::Backbone::Identity->new(
+                username => $self->bot_username,
+                nickname => $self->bot_nickname,
+            ),
             group => undef,
             text  => $input,
         });
@@ -97,7 +112,10 @@ sub got_console_input {
                 username => '(console)',
                 nickname => '(console)',
             ),
-            to    => undef,
+            to    => Bot::Backbone::Identity->new(
+                username => $self->bot_username,
+                nickname => $self->bot_nickname,
+            ),
             group => $group,
             text  => $input,
         });
@@ -124,7 +142,6 @@ sub initialize {
             $self => [ qw( _start got_console_input ) ],
         ],
     );
-    POE::Kernel->run;
 }
 
 sub join_group { }
