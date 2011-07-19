@@ -17,6 +17,7 @@ has term => (
     isa         => 'POE::Wheel::ReadLine',
     required    => 1,
     lazy_build  => 1,
+    clearer     => 'clear_term',
 );
 
 has bot_username => (
@@ -67,6 +68,7 @@ sub got_console_input {
     my $term = $self->term;
     if ($input eq '/quit') {
         $term->addhistory($input);
+        $self->bot->shutdown;
         return;
     }
     elsif ($input =~ m{^/join\s+(\w+)}) {
@@ -148,7 +150,33 @@ sub join_group { }
 
 sub send_reply {
     my ($self, $message, $text) = @_;
-    $self->term->put($self->name . ': ' . $text);
+    $self->term->put($self->bot_username . ': ' . $text);
+}
+
+sub send_message {
+    my ($self, %params) = @_;
+
+    my $to    = $params{to};
+    my $group = $params{group};
+    my $text  = $params{text};
+
+    if (defined $group) {
+        return unless $group eq $self->current_group;
+    }
+    elsif (defined $to) {
+        return unless $to->username eq '(console)';
+    }
+    else {
+        return;
+    }
+
+    $self->term->put($self->bot_username . ': ' . $text);
+}
+
+sub shutdown {
+    my $self = shift;
+    $self->term->put('Good-bye.');
+    $self->clear_term;
 }
 
 __PACKAGE__->meta->make_immutable;

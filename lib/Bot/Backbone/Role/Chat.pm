@@ -14,7 +14,7 @@ has chat_consumers => (
     },
 );
 
-requires qw( send_reply );
+requires qw( send_reply send_message );
 
 sub resend_message {
     my ($self, $message) = @_;

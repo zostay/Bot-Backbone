@@ -1,0 +1,42 @@
+#!/usr/bin/env perl
+package TickBot;
+use v5.10;
+use Bot::Backbone;
+
+use POE;
+
+service chat_bot => (
+    service      => 'ConsoleChat',
+    bot_username => 'tick',
+    bot_nickname => 'tock',
+);
+
+service group_foo => (
+    service     => 'GroupChat',
+    chat        => 'chat_bot',
+    group       => 'foo',
+);
+
+my $bot = TickBot->new;
+
+POE::Session->create(
+    inline_states => {
+        _start => sub {
+            $_[KERNEL]->delay(tick => 1);
+        },
+        tick => sub {
+            if (defined $bot->services->{group_foo}) {
+                $bot->services->{group_foo}->send_message(text => 'tick');
+                $_[KERNEL]->delay(tock => 1);
+            }
+        },
+        tock => sub {
+            if (defined $bot->services->{group_foo}) {
+                $bot->services->{group_foo}->send_message(text => 'tock');
+                $_[KERNEL]->delay(tick => 1);
+            }
+        },
+    },
+);
+
+$bot->run;

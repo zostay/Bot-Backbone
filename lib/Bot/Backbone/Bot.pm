@@ -12,8 +12,9 @@ has services => (
     default     => sub { +{} },
     traits      => [ 'Hash' ],
     handles     => {
-        add_service   => 'set',
-        list_services => 'values',
+        add_service      => 'set',
+        list_services    => 'values',
+        destroy_services => 'clear',
     },
 );
 
@@ -54,6 +55,13 @@ sub run {
     $_->initialize for ($self->list_services);
 
     POE::Kernel->run;
+}
+
+sub shutdown {
+    my $self = shift;
+
+    $_->shutdown for ($self->list_services);
+    $self->destroy_services;
 }
 
 __PACKAGE__->meta->make_immutable;

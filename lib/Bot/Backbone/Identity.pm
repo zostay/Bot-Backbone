@@ -13,7 +13,7 @@ has username => (
 has nickname => (
     is          => 'rw',
     isa         => 'Str',
-    required    => 1,
+    predicate   => 'has_nickname',
 );
 
 __PACKAGE__->meta->make_immutable;

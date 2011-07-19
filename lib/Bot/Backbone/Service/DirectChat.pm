@@ -16,6 +16,22 @@ sub send_reply {
     $self->chat->send_reply($message, $text);
 }
 
+sub send_message {
+    my ($self, %params) = @_;
+
+    my $to = $params{to} // Bot::Backbone::Identity->new(
+        username => $params{to_username},
+        (defined $params{to_nickname} ? (nickname => $params{to_nickname}) : ()),
+    );
+
+    my $text = $params{text};
+
+    $self->chat->send_message(
+        to   => $to,
+        text => $text,
+    );
+}
+
 sub receive_message {
     my ($self, $message) = @_;
 
