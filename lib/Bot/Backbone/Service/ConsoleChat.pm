@@ -20,6 +20,14 @@ has term => (
     clearer     => 'clear_term',
 );
 
+sub _build_term { 
+    my $self = shift;
+    POE::Wheel::ReadLine->new(
+        AppName    => $self->bot->meta->name,
+        InputEvent => 'got_console_input',
+    );
+};
+
 has bot_username => (
     is          => 'ro',
     isa         => 'Str',
@@ -31,14 +39,6 @@ has bot_nickname => (
     isa         => 'Str',
     required    => 1,
 );
-
-sub _build_term { 
-    my $self = shift;
-    POE::Wheel::ReadLine->new(
-        AppName    => $self->bot->meta->name,
-        InputEvent => 'got_console_input',
-    );
-};
 
 has current_group => (
     is          => 'rw',

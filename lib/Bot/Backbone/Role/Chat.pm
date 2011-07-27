@@ -4,7 +4,7 @@ use Moose::Role;
 
 has chat_consumers => (
     is          => 'ro',
-    isa         => 'ArrayRef[Bot::Backbone::Role::ChatConsumer]',
+    isa         => 'ArrayRef', # 'ArrayRef[DOES Bot::Backbone::Role::ChatConsumer]',
     required    => 1,
     default     => sub { [] },
     traits      => [ 'Array' ],
