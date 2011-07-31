@@ -509,6 +509,4 @@ sub send_message {
     $contact->make_message(body => $text)->send;
 }
 
-sub shutdown { }
-
 __PACKAGE__->meta->make_immutable;

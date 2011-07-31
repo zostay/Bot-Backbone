@@ -56,6 +56,7 @@ sub construct_services {
 
     for my $name ($self->meta->list_services) {
         my $service_config = $self->meta->services->{$name};
+        next if defined $self->services->{$name};
 
         my $class_name = $service_config->{service};
         if ($class_name =~ s/^\.//) {
