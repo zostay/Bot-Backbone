@@ -4,12 +4,48 @@ use Moose::Role;
 
 use namespace::autoclean;
 
+# ABSTRACT: Role for services that can perform dispatch
+
+=head1 DESCRIPTION
+
+Any service that can use a dispatcher employ this role to make that happen.
+
+=head1 ATTRIBUTES
+
+=head2 dispatcher_name
+
+  dispatcher default => as {
+      ...
+  };
+
+  service some_service => (
+      service    => '=My::Service',
+      dispatcher => 'default',
+  );
+
+During construction, this is named C<dispatcher>. This is the name of the
+dispatcher to load from the bot during initialization.
+
+=cut
+
 has dispatcher_name => (
     is          => 'ro',
     isa         => 'Str',
     init_arg    => 'dispatcher',
     predicate   => 'has_dispatcher',
 );
+
+=head2 dispatcher
+
+  my $dispatcher = $service->dispatcher;
+
+Do not set this attribute. It will be loaded using the L</dispatcher_name>
+automatically. It returns a L<Bot::Bakcbone::Dispatcher> object to use for
+dispatch.
+
+A C<dispatch_message> method is also delegated to the dispatcher.
+
+=cut
 
 has dispatcher => (
     is          => 'ro',

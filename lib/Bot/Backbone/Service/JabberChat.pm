@@ -14,6 +14,133 @@ use AnyEvent::XMPP::Client;
 use AnyEvent::XMPP::Ext::Disco;
 use AnyEvent::XMPP::Ext::MUC;
 
+# ABSTRACT: Connect and chat with a Jabber server
+
+=head1 SYNOPSIS
+
+  service jabber_chat => (
+      service  => 'JabberChat',
+      username => 'bot',
+      domain   => 'example.com',
+      resource => 'coolbot',
+      password => 'secret',
+  );
+
+=head1 DESCRIPTION
+
+Connects to and chats directly with other users and chat groups using a Jabber
+(XMPP) server.
+
+=head1 ATTRIBUTES
+
+=head2 username
+
+This is the username (or localpart in XMPP parlance) to use when connecting to the Jabber server. E.g., if your bot's login name is C<bot@example.com>, the username is "bot".
+
+=cut
+
+has username => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+);
+
+=head2 domain
+
+This is the domain (or domainpart) to use when connecting to the Jabber server. E.g., f your bot's login mame is C<bot@example.com>, the domain is "example.com".
+
+=cut
+
+has domain => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+);
+
+=head2 group_domain
+
+This is the domain to contact for group chats. Normally, this is the same as L</domain>, but with "conference." tacked on at the front.
+
+=cut
+
+has group_domain => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    default     => sub {
+        my $self = shift;
+        return join '.', 'conference', $self->jid
+    },
+);
+
+=head2 resource
+
+This is a the resourcepart of your login name. You may not really care what this is set to, but it shows up in some chat clients. By default it will be set to "backbone-bot", but you can set it something else, if you like.
+
+=cut
+
+has resource => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'backbone-bot',
+);
+
+=head2 password
+
+This is the password to use when logging in to the Jabber server.
+
+=cut
+
+has password => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+);
+
+=head2 host
+
+This is the host to contact to login. If not set, the L</domain> will be used.
+
+If you run your bot on Google Talk, you will probably want this set to L<talk.google.com>.
+
+=cut
+
+has host => (
+    is          => 'ro',
+    isa         => 'Str',
+);
+
+=head2 port
+
+This is the port to connect. If you do not set it to anything, the default of 5222 will be used.
+
+=cut
+
+has port => (
+    is          => 'ro',
+    isa         => 'Int',
+);
+
+=head2 connection_args
+
+These are additional connection arguments to pass to the XMPP connector. See
+L<AnyEvent::XMPP::Connection> for a list of available options.
+
+=cut
+
+has connection_args => (
+    is          => 'ro',
+    isa         => 'HashRef',
+);
+
+=head2 xmpp_client
+
+This is the XMPP client object for organizing connections.
+
+=cut
+
 has xmpp_client => (
     is          => 'ro',
     isa         => 'AnyEvent::XMPP::Client',
@@ -23,6 +150,12 @@ has xmpp_client => (
 
 sub _build_xmpp_client { AnyEvent::XMPP::Client->new( debug => 1 ) }
 
+=head2 xmpp_disco
+
+This is the XMPP discovery extension helper.
+
+=cut
+
 has xmpp_disco => (
     is          => 'ro',
     isa         => 'AnyEvent::XMPP::Ext::Disco',
@@ -31,6 +164,12 @@ has xmpp_disco => (
 );
 
 sub _build_xmpp_disco { AnyEvent::XMPP::Ext::Disco->new }
+
+=head2 xmpp_muc
+
+This is the XMPP multi-user chat extension helper.
+
+=cut
 
 has xmpp_muc => (
     is          => 'ro',
@@ -44,55 +183,12 @@ sub _build_xmpp_muc {
     AnyEvent::XMPP::Ext::MUC->new( disco => $self->xmpp_disco );
 }
 
-has username => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-);
+=head2 session_ready
 
-has domain => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-);
+Once the connection has been made and is ready to start sending and receiving
+messages, this will be set to true.
 
-has group_domain => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    lazy        => 1,
-    default     => sub {
-        my $self = shift;
-        return join '.', 'conference', $self->jid
-    },
-);
-
-has resource => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-);
-
-has password => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-);
-
-has host => (
-    is          => 'ro',
-    isa         => 'Str',
-);
-
-has port => (
-    is          => 'ro',
-    isa         => 'Int',
-);
-
-has connection_args => (
-    is          => 'ro',
-    isa         => 'HashRef',
-);
+=cut
 
 has session_ready => (
     is          => 'rw',
@@ -100,6 +196,13 @@ has session_ready => (
     required    => 1,
     default     => 0,
 );
+
+=head2 group_names
+
+This is a list of multi-user chat groups the bot has joined or intends to join
+once L</session_ready> becomes true.
+
+=cut
 
 has group_names => (
     is          => 'rw',
@@ -113,6 +216,15 @@ has group_names => (
     },
 );
 
+=head1 METHODS
+
+=head2 jid
+
+This assembles a full JID (Jabber ID) using the L</username>, L</domain>, and
+L</resource>.
+
+=cut
+
 sub jid {
     my $self = shift;
     return $self->username
@@ -120,20 +232,48 @@ sub jid {
          . '/' . $self->resource;
 }
 
+=head2 group_jid
+
+  my $group_jid = $chat->group_jid('bar');
+
+Given a short group name, returns the bare JID for that group.
+
+=cut
+
 sub group_jid {
     my ($self, $name) = @_;
     return $name . '@' . $self->conference_domain,
 }
+
+=head2 xmpp_account
+
+Returns the XMPP account object.
+
+=cut
 
 sub xmpp_account {
     my $self = shift;
     return $self->xmpp_client->get_account($self->jid);
 }
 
+=head2 xmpp_connection
+
+Returns teh XMPP connection object.
+
+=cut
+
 sub xmpp_connection {
     my $self = shift;
     return $self->xmpp_account->connection;
 }
+
+=head2 xmpp_room
+
+  my $xmpp_room = $chat->xmpp_room('qux');
+
+Returns the XMPP room object for the named room.
+
+=cut
 
 sub xmpp_room {
     my ($self, $name) = @_;
@@ -143,10 +283,25 @@ sub xmpp_room {
     );
 }
 
+=head2 xmpp_contact
+
+  my $xmpp_contact = $chat->xmpp_contact('user@example.com/blah');
+
+Given a JID, returns the XMPP contact object for that user.
+
+=cut
+
 sub xmpp_contact {
     my ($self, $name) = @_;
     return $self->xmpp_connection->get_roster->get_contact($name);
 }
+
+=head2 initialize
+
+Connects to the Jabber server and registers the events for receiving messages
+from it.
+
+=cut
 
 sub initialize {
     my $self = shift;
@@ -195,6 +350,14 @@ sub initialize {
     $self->xmpp_client->start;
 }
 
+=head2 join_group
+
+Asks to join the named multi-user chat groups on the Jabber server. If L</session_ready> is false, the chat service will only record a desire to join the group. No actual join will take place. Once the session becomes ready, all pending groups will be joined.
+
+If the session is ready already, then the group will be joined immediately.
+
+=cut
+
 sub _join_pending_groups {
     my $self = shift;
 
@@ -227,6 +390,16 @@ sub join_group {
     $self->_join_pending_groups($name) if $self->session_ready;
 }
 
+=head1 EVENT HANDLERS
+
+=head2 got_direct_message
+
+Whenever someone sends the bot a direct message throught eh Jabber server, this
+handler is called. It builds a L<Bot::Backbone::Message> and then passes that
+message on the associated chat consumers and the dispatcher.
+
+=cut
+
 sub got_direct_message {
     my ($self, $client, $account, $xmpp_message) = @_;
 
@@ -252,6 +425,14 @@ sub got_direct_message {
         $self->dispatch_message($message);
     }
 }
+
+=head2 got_group_message
+
+Whenever someone posts to a conference room that the bot has joined, this method
+will be called to create a L<Bot::Backbone::Message> and pass that message on to
+chat consumers and the dispatcher.
+
+=cut
 
 sub got_group_message {
     my ($self, $client, $room, $xmpp_message, $is_echo) = @_;
@@ -284,6 +465,13 @@ sub got_group_message {
     }
 }
 
+=head2 send_reply
+
+Sends a message back to the same user or group that originated the given
+message.
+
+=cut
+
 sub send_reply {
     my ($self, $message, $text) = @_;
 
@@ -293,6 +481,12 @@ sub send_reply {
         text  => $text,
     );
 }
+
+=head2 send_message
+
+Sends a message to the Jabber server for a direct chat or group.
+
+=cut
 
 sub send_message {
     my ($self, %params) = @_;
