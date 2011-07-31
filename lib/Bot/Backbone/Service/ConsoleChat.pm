@@ -87,7 +87,11 @@ When chat is in a group, any message the bot sends to that group will be
 displayed. Also, interactive commands sent will be presented as if they happened
 in that group.
 
-The special group "(none)" means that console is in no group. This mutes all 
+The special group "(all)" means that the console is in no group, but shows all
+gropu chats that the bot may send on the console. Anything put on the command
+line will behave as if they are direct messages to the bot.
+
+The special group "(none)" means that the console is in no group. This mutes all
 group chats that the bot may send and all entries on the command line will
 behave as if they are direct messages to the bot.
 
@@ -97,7 +101,7 @@ has current_group => (
     is          => 'rw',
     isa         => 'Str',
     required    => 1,
-    default     => '(none)',
+    default     => '(all)',
 );
 
 =head1 EVENT HANDLERS
@@ -139,7 +143,11 @@ group name.
 
 =head3 /leave
 
-Causes the console chat to enter the "(none)" group. 
+Causes the console chat to enter the "(all)" group. 
+
+=head3 /mute
+
+Causes the console chat to enter the "(none)" group.
 
 See L</current_group>.
 
@@ -147,9 +155,9 @@ See L</current_group>.
 
   /dm ...
 
-This is implied when the L</current_group> is "(none)". This causes a message
-typed at the prompt to be treated as a direct message, even if L</current_group>
-is set to a specific group.
+This is implied when the L</current_group> is in "(all)" or "(none)". This
+causes a message typed at the prompt to be treated as a direct message, even if
+L</current_group> is set to a specific group.
 
 =cut
 
@@ -171,8 +179,39 @@ sub got_console_input {
     }
     elsif ($input =~ m{^/leave$}) {
         $term->addhistory($input);
+        $self->current_group('(all)');
+        $input = '';
+    }
+    elsif ($input =~ m{^/mute$}) {
+        $term->addhistory($input);
         $self->current_group('(none)');
         $input = '';
+    }
+    elsif ($input =~ m{^/gm\s+(\S+)\s+(.+)}) {
+        my $group = $1;
+        my $text  = $2;
+
+        $term->addhistory($input);
+
+        my $message = Bot::Backbone::Message->new({
+            chat  => $self,
+            from  => Bot::Backbone::Identity->new(
+                username => '(console)',
+                nickname => '(console)',
+            ),
+            to    => Bot::Backbone::Identity->new(
+                username => $self->bot_username,
+                nickname => $self->bot_nickname,
+            ),
+            group => $1,
+            text  => $2,
+        });
+
+        $self->resend_message($message);
+
+        if ($self->has_dispatcher) {
+            $self->dispatch_message($message);
+        }
     }
     elsif ($input =~ s{^/dm\s+(.+)}{$1}) {
         $term->addhistory($input);
@@ -199,7 +238,8 @@ sub got_console_input {
     }
     else {
         my $group = $self->current_group;
-           $group = undef if $group eq '(none)';
+           $group = undef if $group eq '(none)'
+                          or $group eq '(all)';
 
         my $message = Bot::Backbone::Message->new({
             chat  => $self,
