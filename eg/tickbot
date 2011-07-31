@@ -5,11 +5,25 @@ use Bot::Backbone;
 
 use POE;
 
-service chat_bot => (
-    service      => 'ConsoleChat',
-    bot_username => 'tick',
-    bot_nickname => 'tock',
-);
+my $debug = 0;
+
+if ($debug == 1) {
+    service chat_bot => (
+        service      => 'ConsoleChat',
+        bot_username => 'tick',
+        bot_nickname => 'tock',
+    );
+}
+else {
+    service chat_bot => (
+        service  => 'JabberChat',
+        username => 'tick',
+        domain   => 'example.com',
+        resource => 'ticktock',
+        password => 'secret',
+        host     => 'secret',
+    );
+}
 
 service group_foo => (
     service     => 'GroupChat',

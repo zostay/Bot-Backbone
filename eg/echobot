@@ -3,11 +3,28 @@ package EchoBot;
 use v5.10;
 use Bot::Backbone;
 
-service chat_bot => (
-    service      => 'ConsoleChat',
-    bot_username => 'echo',
-    bot_nickname => 'echo',
-);
+my $debug = 0;
+
+if ($debug == 1) {
+    service chat_bot => (
+        service      => 'ConsoleChat',
+        bot_username => 'echo',
+        bot_nickname => 'echo',
+    );
+}
+else {
+    service chat_bot => (
+        service  => 'JabberChat',
+        username => 'echo',
+        domain   => 'example.com',
+        resource => 'echobot',
+        password => 'secret',
+        host     => 'talk.google.com',
+        connection_args => {
+            disable_iq_auth => 1,
+        },
+    );
+}
 
 service group_foo => (
     service    => 'GroupChat',
