@@ -2,7 +2,7 @@ package Bot::Backbone::Bot;
 use v5.10;
 use Moose;
 
-use Bot::Backbone::Types qw( ServiceList );
+use Bot::Backbone::Types qw( EventLoop ServiceList );
 use POE;
 
 # ABSTRACT: Provides backbone services to your bot
@@ -14,13 +14,38 @@ use POE;
 
 =head1 DESCRIPTION
 
-When you use L<Bot::Backbone> in your code, you get a bot implementing this role. It provides tools for constructing, executing, and shutting down services.
+When you use L<Bot::Backbone> in your code, you get a bot implementing this
+role. It provides tools for constructing, executing, and shutting down services.
 
 =head1 ATTRIBUTES
 
+=head2 event_loop
+
+Bots do all their work using an event loop. Usually, this is either L<POE> or
+L<AnyEvent>. Fortunately, these event loops tend to work well together in case
+you need both. Just in case you need specialized startup for your bot's event
+loop, though, this is attribute is provided to allow the event loop startup to
+be customized.
+
+This is an object or class on which you may call a C<run> with no arguments. It
+will be called to start the event loop. By default, this is just
+"L<POE::Kernel>". It is expected that this method will block until the bot is
+shutdown.
+
+=cut
+
+has event_loop => (
+    is          => 'ro',
+    isa         => EventLoop,
+    required    => 1,
+    default     => 'POE::Kernel',
+);
+
 =head2 services
 
-This is a hash of constructed services used by this bot. There should be a key in this hash matching every key in the same attribute in L<Bot::Backbone::Meta::Class>, once L</run> has been called.
+This is a hash of constructed services used by this bot. There should be a key
+in this hash matching every key in the same attribute in
+L<Bot::Backbone::Meta::Class>, once L</run> has been called.
 
 =cut
 
@@ -86,7 +111,7 @@ sub construct_services {
 
 This starts your bot running. It constructs the services if they have not yet been constructed. Then, it initializes each service. Finally, it starts the L<POE> event loop. This last part really isn't it's business and might go away in the future.
 
-This method will not return until the POE event loop terminates. The usual way to do this is to call L</shutdown>.
+This method will not return until the event loop terminates. The usual way to do this is to call L</shutdown>.
 
 =cut
 
@@ -96,7 +121,7 @@ sub run {
     $self->construct_services;
     $_->initialize for ($self->list_services);
 
-    POE::Kernel->run;
+    $self->event_loop->run;
 }
 
 =head2 shutdown

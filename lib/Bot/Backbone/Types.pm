@@ -3,8 +3,9 @@ use v5.10;
 use Moose;
 
 use List::MoreUtils qw( all );
-use MooseX::Types::Moose qw( ArrayRef CodeRef HashRef Object );
+use MooseX::Types::Moose qw( ArrayRef ClassName CodeRef HashRef Object );
 use MooseX::Types -declare => [ qw(
+    EventLoop
     PredicateList
     ServiceList
 ) ];
@@ -21,6 +22,25 @@ using L<MooseX::Types>.
 
 =head1 TYPES
 
+=head2 EventLoop
+
+This is just an object with a C<run> method.
+
+=cut
+
+subtype EventLoop,
+    as ClassName|Object,
+    where { $_->can('run') };
+
+=head2 PredicateList
+
+This is an array of code references.
+
+=cut
+
+subtype PredicateList,
+    as ArrayRef[CodeRef];
+
 =head2 ServiceList
 
 This is a hash of objects that implement L<Bot::Backbone::Role::Service>.
@@ -31,14 +51,5 @@ class_type 'Bot::Backbone::Role::Service';
 subtype ServiceList,
     as HashRef[Object],
     where { all { blessed $_ and $_->does('Bot::Backbone::Role::Service') } values %$_ };
-
-=head2 PredicateList
-
-This is an array of code references.
-
-=cut
-
-subtype PredicateList,
-    as ArrayRef[CodeRef];
 
 __PACKAGE__->meta->make_immutable;
