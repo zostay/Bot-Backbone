@@ -9,6 +9,7 @@ with qw(
 );
 
 use Bot::Backbone::Message;
+use List::MoreUtils qw( all );
 use POE qw( Wheel::ReadLine );
 
 # ABSTRACT: Chat with an interactive command line

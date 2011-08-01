@@ -3,6 +3,7 @@ use v5.10;
 use Moose;
 
 use Bot::Backbone::Identity;
+use List::MoreUtils qw( all );
 
 # ABSTRACT: Describes a message or response
 
@@ -185,12 +186,12 @@ named are not set.
 
 =cut
 
-sub add_flag     { shift->flags->{$_} = 1 for @_ } 
-sub add_flags    { shift->flags->{$_} = 1 for @_ }
-sub remove_flag  { delete shift->flags->{$_} for @_ }
-sub remove_flags { delete shift->flags->{$_} for @_ }
-sub has_flag     { all { shift->flags->{$_} } @_ }
-sub has_flags    { all { shift->flags->{$_} } @_ }
+sub add_flag     { my $self = shift; $self->flags->{$_} = 1 for @_ } 
+sub add_flags    { my $self = shift; $self->flags->{$_} = 1 for @_ }
+sub remove_flag  { my $self = shift; delete $self->flags->{$_} for @_ }
+sub remove_flags { my $self = shift; delete $self->flags->{$_} for @_ }
+sub has_flag     { my $self = shift; all { $self->flags->{$_} } @_ }
+sub has_flags    { my $self = shift; all { $self->flags->{$_} } @_ }
 
 =head2 set_bookmark
 
