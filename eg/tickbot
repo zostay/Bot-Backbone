@@ -5,10 +5,10 @@ use Bot::Backbone;
 
 use POE;
 
-my $debug = 0;
+my $debug = 1;
 
 if ($debug == 1) {
-    service chat_bot => (
+    service tick_chat => (
         service      => 'ConsoleChat',
         bot_username => 'tick',
         bot_nickname => 'tock',
@@ -23,13 +23,14 @@ else {
         password => 'secret',
         host     => 'secret',
     );
-}
 
-service group_foo => (
-    service     => 'GroupChat',
-    chat        => 'chat_bot',
-    group       => 'foo',
-);
+    service tick_chat => (
+        service     => 'GroupChat',
+        chat        => 'chat_bot',
+        group       => 'foo',
+    );
+
+}
 
 my $bot = TickBot->new;
 
@@ -39,14 +40,14 @@ POE::Session->create(
             $_[KERNEL]->delay(tick => 1);
         },
         tick => sub {
-            if (defined $bot->services->{group_foo}) {
-                $bot->services->{group_foo}->send_message(text => 'tick');
+            if (defined $bot->services->{tick_chat}) {
+                $bot->services->{tick_chat}->send_message(text => 'tick');
                 $_[KERNEL]->delay(tock => 1);
             }
         },
         tock => sub {
-            if (defined $bot->services->{group_foo}) {
-                $bot->services->{group_foo}->send_message(text => 'tock');
+            if (defined $bot->services->{tick_chat}) {
+                $bot->services->{tick_chat}->send_message(text => 'tock');
                 $_[KERNEL]->delay(tick => 1);
             }
         },
