@@ -242,7 +242,7 @@ Given a short group name, returns the bare JID for that group.
 
 sub group_jid {
     my ($self, $name) = @_;
-    return $name . '@' . $self->conference_domain,
+    return $name . '@' . $self->group_domain,
 }
 
 =head2 xmpp_account
@@ -437,28 +437,41 @@ chat consumers and the dispatcher.
 sub got_group_message {
     my ($self, $client, $room, $xmpp_message, $is_echo) = @_;
 
+    # Ignore messages echoed back to the bot
     return if $is_echo;
 
+    # Ignore messages from the room itself
+    return unless defined $xmpp_message->from_nick;
+
+    # Ignore delayed messages (e.g., received as a replay of recent room discussion)
+    return if $xmpp_message->is_delayed;
+
+    # Figure out which group this is
     my $group_domain = $self->group_domain;
-    #my $to_contact   =  $self->xmpp_contact($xmpp_message->to);
-    my $from_contact =  $self->xmpp_contact($xmpp_message->from);
     my $group        =  $room->jid;
        $group        =~ s/\@$group_domain$//;
 
+    # Figure out who sent this message
+    my $from_user = $room->get_user($xmpp_message->from_nick);
+    my $real_jid  = $from_user->real_jid;
+
+    # Prefer the real JID as the username
+    my $from_username = $from_user->real_jid // $xmpp_message->from_nick;
+    my $from_nickname = $xmpp_message->from_nick;
+
+    # Build the message
     my $message = Bot::Backbone::Message->new({
         chat => $self,
         from => Bot::Backbone::Identity->new(
-            username => $from_contact->jid,
-            nickname => $from_contact->name // $from_contact->jid,
+            username => $from_username,
+            nickname => $from_nickname,
         ),
-        to   => Bot::Backbone::Identity->new(
-            username => '(room)',
-            nickname => '(room)',
-        ),
+        to    => undef,
         group => $group,
         text  => $xmpp_message->body,
     });
 
+    # Pass it on
     $self->resend_message($message);
     if ($self->has_dispatcher) {
         $self->dispatch_message($message);
