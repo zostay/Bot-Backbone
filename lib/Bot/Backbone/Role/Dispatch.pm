@@ -52,7 +52,6 @@ has dispatcher => (
     isa         => 'Bot::Backbone::Dispatcher',
     init_arg    => undef,
     lazy_build  => 1,
-    handles     => [ 'dispatch_message' ],
 
     # lazy_build implies (predicate => has_dispatcher)
     predicate   => 'has_setup_the_dispatcher', 
@@ -61,6 +60,24 @@ has dispatcher => (
 sub _build_dispatcher {
     my $self = shift;
     $self->bot->meta->dispatchers->{ $self->dispatcher_name };
+}
+
+=head1 METHODS
+
+=head2 dispatch_message
+
+  $service->dispatch_message($message);
+
+If the service has a dispatcher configured, this will call the L<Bot::Backbone::Dispatcher/dispatch_message> method on the dispatcher.
+
+=cut
+
+sub dispatch_message {
+    my ($self, $message) = @_;
+
+    if ($self->has_dispatcher) {
+        $self->dispatcher->dispatch_message($self, $message);
+    }
 }
 
 1;

@@ -169,10 +169,7 @@ sub cli_message {
     });
 
     $self->resend_message($message);
-
-    if ($self->has_dispatcher) {
-        $self->dispatch_message($message);
-    }
+    $self->dispatch_message($message);
 }
 
 =head1 METHODS

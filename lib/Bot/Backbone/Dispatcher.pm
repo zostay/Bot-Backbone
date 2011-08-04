@@ -70,17 +70,38 @@ Given a L<Bot::Backbone::Message>, this will execute each predicate attached to 
 =cut
 
 sub dispatch_message {
-    my ($self, $message) = @_;
+    my ($self, $service, $message) = @_;
 
     for my $predicate ($self->list_predicates) {
         my $success = $message->set_bookmark_do(sub {
-            $predicate->($message);
+            $predicate->($service, $message);
         });
         last if $success;
     }
 
     for my $predicate ($self->list_also_predicates) {
-        $message->set_bookmark_do(sub { $predicate->($message) });
+        $message->set_bookmark_do(sub { $predicate->($service, $message) });
+    }
+}
+
+=head2 add_predicate_or_return
+
+  $dispatcher->add_predicate_or_return($predicate);
+
+Chances are that you probably don't need this method. However, if you are creating a new kind of predicate, you will probably want this method.
+
+This will do the right thing to either add a root level predicate to the dispatcher or return the predicate for chaining within another predicate. You probably want to read the code in L<Bot::Backbone::DispatchSugar> for examples.
+
+=cut
+
+sub add_predicate_or_return {
+    my ($self, $code) = @_;
+
+    if (defined wantarray) {
+        return $code;
+    }
+    else {
+        $self->add_predicate($code);
     }
 }
 

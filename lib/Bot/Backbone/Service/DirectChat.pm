@@ -79,9 +79,7 @@ sub receive_message {
     return unless $message->is_direct;
 
     $self->resend_message($message);
-    if ($self->has_dispatcher) {
-        $self->dispatch_message($message);
-    }
+    $self->dispatch_message($message);
 }
 
 __PACKAGE__->meta->make_immutable;

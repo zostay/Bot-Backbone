@@ -1,6 +1,7 @@
 package Bot::Backbone;
 use v5.10;
 use Moose();
+use Bot::Backbone::DispatchSugar();
 use Moose::Exporter;
 
 use Bot::Backbone::Meta::Class;
@@ -169,13 +170,12 @@ to be defined as needed.
 
 Moose::Exporter->setup_import_methods(
     with_meta => [ qw( dispatcher service ) ],
-    as_is     => [ qw( command given_parameters parameter as respond ) ],
-    also      => 'Moose',
+    also      => [ qw( Moose Bot::Backbone::DispatchSugar ) ],
 );
 
 =head2 init_meta
 
-Setup the bot package with L<Bot::Backbone::Meta::Class> as the meta class.
+Setup the bot package with L<Bot::Backbone::Meta::Class> as the meta class and L<Bot::Backbone::Bot> as the base class.
 
 =cut
 
@@ -229,6 +229,14 @@ sub dispatcher($$) {
 
 =head1 DISPATCHER PREDICATES
 
+=head2 redispatch_to
+
+  redispatch_to 'service_name';
+
+Given a service name for a service implementing L<Bot::Backbone::Role::Dispatch>, we will ask the dispatcher on that object (if any) to perform dispatch.
+
+=cut
+
 =head2 command
 
   command $name => ...;
@@ -239,39 +247,6 @@ whitespace (unless the message is addressed to the bot, in which case whitespace
 is allowed).
 
 =cut
-
-sub command($$) { 
-    my ($name, $code) = @_;
-    my $dispatcher = $_;
-
-    my $qname = quotemeta $name;
-
-    my $new_code = sub {
-        my $message = shift;
-
-        return $message->set_bookmark_do(sub {
-            if ($message->match_next(qr{$qname(?=\s|\z)})) {
-                debug("matched command $name");
-                $message->add_flag('command');
-                my $result = $code->($message);
-
-                return $result;
-            }
-
-            debug("unmatched command $name");
-            return '';
-        });
-    };
-
-    if (defined wantarray) {
-        debug("sub-command $name");
-        return $new_code;
-    }
-    else {
-        debug("command $name");
-        $dispatcher->add_predicate($new_code);
-    }
-}
 
 =head2 not_command
 
@@ -310,54 +285,6 @@ come next. Each argument is separated by whitespace.
 TODO More detail is needed on what can go into C<%config>.
 
 =cut
-
-our $WITH_ARGS;
-sub given_parameters(&$) {
-    my ($arg_code, $code) = @_;
-    my $dispatcher = $_;
-
-    my @args;
-    {
-        local $WITH_ARGS = \@args;
-        $arg_code->();
-    }
-
-    my $new_code = sub {
-        my $message = shift;
-
-        return $message->set_bookmark_do(sub {
-            for my $arg (@args) {
-                my ($name, $config) = @$arg;
-                my $match = $config->{match};
-
-                if (my $value = $message->match_next(qr{$match})) {
-                    debug("matched argument $name: qr{$match}");
-                    $message->set_parameter($name => $value);
-                }
-                else {
-                    debug("unmatched argument $name: qr{$match}");
-                    return '';
-                }
-            }
-
-            return $code->($message);
-        });
-    };
-
-    if (defined wantarray) {
-        debug("sub-given_parameters: ", join ', ',  map { $_->[0] } @args);
-        return $new_code;
-    }
-    else {
-        debug("given_parameters: ", join ', ', map { $_->[0] } @args);
-        $dispatcher->add_predicate($new_code);
-    }
-}
-
-sub parameter($@) {
-    my ($name, %config) = @_;
-    push @$WITH_ARGS, [ $name, \%config ];
-}
 
 =head2 matching
 
@@ -425,11 +352,6 @@ defined within will be executed in turn if this run mode oepration is reached.
 
 =cut
 
-sub as(&) { 
-    my $code = shift;
-    return $code;
-}
-
 =head2 respond
 
   respond { ... }
@@ -445,37 +367,6 @@ the user. If an empty list or C<undef> is returned, then no message will be sent
 to the user and dispatching will continue as if the predicate had not matched.
 
 =cut
-
-sub respond(&) { 
-    my $code = shift;
-    my $dispatcher = $_;
-
-    my $new_code = sub {
-        my $message = shift;
-
-        debug("getting responses");
-        my @responses = $code->($message);
-        if (@responses) {
-            for my $response (@responses) {
-                debug("responding: $response");
-                $message->reply($response);
-            }
-
-            return 1;
-        }
-
-        return '';
-    };
-
-    if (defined wantarray) {
-        debug("sub-response");
-        return $new_code;
-    }
-    else {
-        debug("response");
-        $dispatcher->add_predicate($new_code);
-    }
-}
 
 =head2 respond_or_stop
 

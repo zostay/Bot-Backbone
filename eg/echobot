@@ -30,7 +30,7 @@ dispatcher default => as {
     command '!echo' => given_parameters { 
         parameter echo_this => ( match => qr/.+/ );
     } respond {
-        my $message = shift;
+        my ($chat, $message) = @_;
         $message->parameters->{echo_this};
     };
 };
