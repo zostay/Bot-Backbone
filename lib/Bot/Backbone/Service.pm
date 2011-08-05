@@ -3,7 +3,7 @@ use v5.10;
 use Moose();
 use Bot::Backbone::DispatchSugar();
 use Moose::Exporter;
-use Moose::Util qw( apply_all_roles );
+use Moose::Util qw( ensure_all_roles );
 
 use Bot::Backbone::Dispatcher;
 use Bot::Backbone::Role::Service;
@@ -15,6 +15,8 @@ use Bot::Backbone::Role::Service;
   package MyBot::Service::Echo;
   use v5.14; # because newer Perl is cooler than older Perl
   use Bot::Backbone::Service;
+
+  with 'Bot::Backbone::Role::Service';
 
   dispatch as {
       command '!echo' => given_parameters {
@@ -33,14 +35,12 @@ use Bot::Backbone::Role::Service;
 
 This is a Moose-replacement for bot backbone services. It provides a similar set of features to a service class as are provided to bot classes by L<Bot::Backbone>.
 
-Implementers of this class are automatically setup with L<Bot::Backbone::Role::Service>.
-
 =head1 SUBROUTINES
 
 =cut
 
 Moose::Exporter->setup_import_methods(
-    with_meta => [ qw( dispatcher ) ],
+    with_meta => [ qw( service_dispatcher ) ],
     also      => [ qw( Moose Bot::Backbone::DispatchSugar ) ],
 );
 
@@ -52,32 +52,30 @@ Setup the bot package by applying the L<Bot::Backbone::Role::Service> role to th
 
 sub init_meta {
     shift;
-    my %args = @_;
-    apply_all_roles($args{for_class}, 'Bot::Backbone::Role::Service');
-    return Moose->init_meta(@_);
+    Moose->init_meta(@_);
 };
 
 =head1 SETUP ROUTINES
 
 =head2 dispatcher
 
-  dispatcher ...;
+  service_dispatcher ...;
 
 Setup the default dispatcher for this service. Use of this method will cause the L<Bot::Backbone::Role::Dispatch> role to be applied to the class.
 
 =cut
 
-sub dispatcher($) {
-    my ($meta, $dispatcher) = @_;
+sub service_dispatcher($) {
+    my ($meta, $code) = @_;
 
-    apply_all_roles($meta->name, 'Bot::Backbone::Role::Dispatch');
+    ensure_all_roles($meta->name, 'Bot::Backbone::Role::Dispatch');
 
-    my $dispatcher_name_attr = $meta->find_attribute('dispatcher_name');
+    my $dispatcher_name_attr = $meta->find_attribute_by_name('dispatcher_name');
     $dispatcher_name_attr->clone_and_inherit_options(
         default => '<From Bot::Backbone::Service>',
     );
 
-    my $dispatcher_attr = $meta->find_attribute('dispatcher');
+    my $dispatcher_attr = $meta->find_attribute_by_name('dispatcher');
     $dispatcher_attr->clone_and_inherit_options(
         default => sub {
             my $dispatcher = Bot::Backbone::Dispatcher->new;

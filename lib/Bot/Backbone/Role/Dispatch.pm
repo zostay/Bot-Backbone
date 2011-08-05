@@ -51,16 +51,15 @@ has dispatcher => (
     is          => 'ro',
     isa         => 'Bot::Backbone::Dispatcher',
     init_arg    => undef,
-    lazy_build  => 1,
+    lazy        => 1,
+    default     => sub {
+        my $self = shift;
+        $self->bot->meta->dispatchers->{ $self->dispatcher_name };
+    },
 
     # lazy_build implies (predicate => has_dispatcher)
     predicate   => 'has_setup_the_dispatcher', 
 );
-
-sub _build_dispatcher {
-    my $self = shift;
-    $self->bot->meta->dispatchers->{ $self->dispatcher_name };
-}
 
 =head1 METHODS
 

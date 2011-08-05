@@ -15,7 +15,7 @@ See L<Bot::Backbone> and L<Bot::Backbone::Service>.
 =cut
 
 Moose::Exporter->setup_import_methods(
-    as_is => [ qw( command given_parameters parameter as respond by_method ) ],
+    as_is => [ qw( command given_parameters parameter as respond respond_by_method redispatch_to ) ],
 );
 
 sub redispatch_to($) {
@@ -114,11 +114,10 @@ sub respond(&) {
     });
 }
 
-sub by_method($) {
+sub _by_method {
     my ($name) = @_;
-    my $dispatcher = $_;
 
-    $dispatcher->add_predicate_or_return(sub {
+    return sub {
         my ($service, $message) = @_;
 
         my $method = $service->can($name);
@@ -128,7 +127,14 @@ sub by_method($) {
         else {
             Carp::croak("no such method as $name found on ", $service->meta->name);
         }
-    });
+    };
+}
+
+sub respond_by_method($) {
+    my ($name) = @_;
+
+    my $code = _by_method($name);
+    respond(\&$code);
 }
 
 1;
