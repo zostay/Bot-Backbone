@@ -82,6 +82,8 @@ sub dispatch_message {
     for my $predicate ($self->list_also_predicates) {
         $message->set_bookmark_do(sub { $predicate->($service, $message) });
     }
+
+    return;
 }
 
 =head2 add_predicate_or_return
@@ -95,11 +97,11 @@ This will do the right thing to either add a root level predicate to the dispatc
 =cut
 
 sub add_predicate_or_return {
-    my ($self, $code) = @_;
+    my ($self, $code, $options) = @_;
 
     if (defined wantarray) {
         return $code;
-    }
+    } 
     else {
         $self->add_predicate($code);
     }

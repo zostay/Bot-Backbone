@@ -213,6 +213,7 @@ sub set_bookmark {
         text  => $self->text,
     );
     $self->_set_bookmark($bookmark);
+    return;
 }
 
 =head2 restore_bookark
@@ -234,6 +235,7 @@ sub restore_bookmark {
     $self->from($bookmark->from);
     $self->group($bookmark->group);
     $self->text($bookmark->text);
+    return;
 }
 
 =head2 set_bookmark_do
@@ -253,6 +255,7 @@ sub set_bookmark_do {
     $self->set_bookmark;
     $code->();
     $self->restore_bookmark;
+    return;
 }
 
 =head2 match_next

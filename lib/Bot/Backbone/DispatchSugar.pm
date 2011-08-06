@@ -15,7 +15,14 @@ See L<Bot::Backbone> and L<Bot::Backbone::Service>.
 =cut
 
 Moose::Exporter->setup_import_methods(
-    as_is => [ qw( command given_parameters parameter as respond respond_by_method redispatch_to ) ],
+    as_is => [ qw( 
+        command not_command
+        given_parameters parameter 
+        as 
+        also
+        respond respond_by_method 
+        redispatch_to 
+    ) ],
 );
 
 sub redispatch_to($) {
@@ -27,6 +34,16 @@ sub redispatch_to($) {
 
         my $redispatch_service = $service->bot->services->{$name};
         return $redispatch_service->dispatch_message($message);
+    });
+}
+
+sub also($) {
+    my ($code) = @_;
+    my $dispatcher = $_;
+
+    $dispatcher->add_also_predicate(sub {
+        my ($service, $message) = @_;
+        return $code->($service, $message);
     });
 }
 
@@ -49,6 +66,21 @@ sub command($$) {
 
             return '';
         });
+    });
+}
+
+sub not_command($) {
+    my ($code) = @_;
+    my $dispatcher = $_;
+
+    $dispatcher->add_predicate_or_return(sub {
+        my ($service, $message) = @_;
+        
+        unless ($message->has_flag('command')) {
+            return $code->($service, $message);
+        }
+
+        return '';
     });
 }
 

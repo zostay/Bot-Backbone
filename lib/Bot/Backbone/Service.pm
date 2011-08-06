@@ -71,12 +71,13 @@ sub service_dispatcher($) {
     ensure_all_roles($meta->name, 'Bot::Backbone::Role::Dispatch');
 
     my $dispatcher_name_attr = $meta->find_attribute_by_name('dispatcher_name');
-    $dispatcher_name_attr->clone_and_inherit_options(
+    my $new_dispatcher_name_attr = $dispatcher_name_attr->clone_and_inherit_options(
         default => '<From Bot::Backbone::Service>',
     );
+    $meta->add_attribute($new_dispatcher_name_attr);
 
     my $dispatcher_attr = $meta->find_attribute_by_name('dispatcher');
-    $dispatcher_attr->clone_and_inherit_options(
+    my $new_dispatcher_attr = $dispatcher_attr->clone_and_inherit_options(
         default => sub {
             my $dispatcher = Bot::Backbone::Dispatcher->new;
             {
@@ -86,6 +87,7 @@ sub service_dispatcher($) {
             return $dispatcher;
         },
     );
+    $meta->add_attribute($new_dispatcher_attr);
 }
 
 1;
