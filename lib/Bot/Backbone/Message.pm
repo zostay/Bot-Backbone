@@ -119,6 +119,7 @@ has args => (
     predicate   => 'has_args',
     traits      => [ 'Array' ],
     handles     => {
+        'all_args'      => 'elements',
         'shift_args'    => 'shift',
         'unshift_args'  => 'unshift',
         'pop_args'      => 'pop',
@@ -140,7 +141,7 @@ sub _build_args {
 
         # Handle "... '... (... [... {...
         if ($original =~ /^\s*$/ and $next_char =~ /['"\(\[\{]/) {
-            $original .= $next_char;
+            $original  .= $next_char;
             $quote_mark = $next_char;
         }
 
@@ -163,27 +164,36 @@ sub _build_args {
             undef $quote_mark;
         }
 
-        # Handle leading or trailing whitespace
-        elsif (not defined $quote_mark and $next_char =~ /\s/) {
-            $original .= $next_char;
-        }
-
         # Handle quoted whitespace
         elsif (defined $quote_mark and $next_char =~ /\s/) {
             $original .= $next_char;
             $current  .= $next_char;
         }
 
-        # Handle word breaks
-        elsif ($original =~ /\S\s+/ and $next_char =~ /\S/) {
+        # Handle leading or trailing whitespace
+        elsif ($next_char =~ /\s/) {
+            $original .= $next_char;
+        }
+
+        # Handle word breaks: non-quote chars
+        elsif (not defined $quote_mark and $original  =~ /\S\s+/ 
+                                       and $next_char =~ /\S/) {
+
             push @args, Bot::Backbone::Message::Arg->new(
                 text     => $current,
                 original => $original,
             );
 
             $original = $next_char;
-            $current  = $next_char;
-            undef $quote_mark;
+            if ($next_char =~ /['"\(\[\{]/) {
+                $current    = '';
+                $quote_mark = $next_char;
+            }
+            else {
+                $current = $next_char;
+                undef $quote_mark;
+            }
+
         }
 
         # Handle letters belonging to the current word
