@@ -51,13 +51,11 @@ sub command($$) {
     my ($name, $code) = @_;
     my $dispatcher = $_;
 
-    my $qname = quotemeta $name;
-
     $dispatcher->add_predicate_or_return(sub {
         my ($service, $message) = @_;
 
         return $message->set_bookmark_do(sub {
-            if ($message->match_next(qr{$qname(?=\s|\z)})) {
+            if ($message->match_next($name)) {
                 $message->add_flag('command');
                 my $result = $code->($service, $message);
 
@@ -103,7 +101,7 @@ sub given_parameters(&$) {
                 my ($name, $config) = @$arg;
                 my $match = $config->{match};
 
-                if (my $value = $message->match_next(qr{$match})) {
+                if (my $value = $message->match_next($match)) {
                     $message->set_parameter($name => $value);
                 }
                 else {

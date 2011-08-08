@@ -86,6 +86,128 @@ has text => (
     required    => 1,
 );
 
+{
+    package Bot::Backbone::Message::Arg;
+    use Moose;
+
+    has [ qw( text original ) ] => (
+        is       => 'rw', 
+        isa      => 'Str', 
+        required => 1,
+    );
+
+    sub clone {
+        my $self = shift;
+        Bot::Backbone::Message::Arg->new(
+            original => $self->original,
+            text     => $self->text,
+        );
+    }
+}
+
+=head2 args
+
+This is a list of "arguments" passed into the bot. Each arg is a C<Bot::Backbone::Message:Arg> object, which is a simple Moose object with only two attributes: C<text> and C<original>. The C<text> is the value of the argument and the C<original> is the original piece of the message L</text> for that value, which contains whitespace, quotation marks, etc.
+
+=cut
+
+has args => (
+    is          => 'rw',
+    isa         => 'ArrayRef[Bot::Backbone::Message::Arg]',
+    required    => 1,
+    lazy_build  => 1,
+    predicate   => 'has_args',
+    traits      => [ 'Array' ],
+    handles     => {
+        'shift_args'   => 'shift',
+        'unshift_args' => 'unshift',
+        'pop_args'     => 'pop',
+        'push_args'    => 'push',
+    },
+);
+
+sub _build_args {
+    my $self = shift;
+
+    my @args;
+    my $source = $self->text;
+    my $original = '';
+    my $current = '';
+    my $quote_mark;
+    while (length $source > 0) {
+        my $next_char = substr $source, 0, 1, '';
+
+        # Handle "... '... (... [... {...
+        if ($original =~ /^\s*$/ and $next_char =~ /['"\(\[\{]/) {
+            $original .= $next_char;
+            $quote_mark = $next_char;
+        }
+
+        # Handle ..." ...' ...) ...] ...}
+        elsif (defined $quote_mark
+           and (($quote_mark =~ /(['"])/ and $next_char eq $1)
+            or  ($quote_mark eq '('      and $next_char eq ')')
+            or  ($quote_mark eq '['      and $next_char eq ']')
+            or  ($quote_mark eq '{'      and $next_char eq '}'))) {
+
+            $original .= $next_char;
+
+            push @args, Bot::Backbone::Message::Arg->new(
+                text     => $current,
+                original => $original,
+            );
+
+            $original = '';
+            $current  = '';
+            undef $quote_mark;
+        }
+
+        # Handle leading or trailing whitespace
+        elsif (not defined $quote_mark and $next_char =~ /\s/) {
+            $original .= $next_char;
+        }
+
+        # Handle quoted whitespace
+        elsif (defined $quote_mark and $next_char =~ /\s/) {
+            $original .= $next_char;
+            $current  .= $next_char;
+        }
+
+        # Handle word breaks
+        elsif ($original =~ /\S\s+/ and $next_char =~ /\S/) {
+            push @args, Bot::Backbone::Message::Arg->new(
+                text     => $current,
+                original => $original,
+            );
+
+            $original = $next_char;
+            $current  = $next_char;
+            undef $quote_mark;
+        }
+
+        # Handle letters belonging to the current word
+        else {
+            $original .= $next_char;
+            $current  .= $next_char;
+        }
+    }
+
+    # Tack on any trailing whitespace we've missed
+    if (@args and $original =~ /^\s+$/) {
+        $args[-1]->text($args[-1] . $original);
+    }
+
+    # Tack on any trailing word that needs be appended
+    else {
+        push @args, Bot::Backbone::Message::Arg->new(
+            text     => $current,
+            original => $original,
+        );
+    }
+
+    return \@args;
+}
+
 =head2 flags
 
 These are flags associated with the message. These may be used by dispatcher to
@@ -212,6 +334,8 @@ sub set_bookmark {
         group => $self->group,
         text  => $self->text,
     );
+    $bookmark->args([ map { $_->clone } @{ $self->args } ]) 
+        if $self->has_args;
     $self->_set_bookmark($bookmark);
     return;
 }
@@ -222,9 +346,9 @@ sub set_bookmark {
 
 Avoid using this method. See L</set_bookmark_do>.
 
-Restores the bookmark on the top of the bookmarks stack. The L</to>, L</from>,
-L</group>, and L</text> are restored. All other attribute modifications will
-stick.
+Restores the bookmark on the top of the bookmarks stack. The L</to>,
+L</from>, L</group>, L</text>, and L</args> are restored. All other attribute
+modifications will stick.
 
 =cut
 
@@ -235,6 +359,8 @@ sub restore_bookmark {
     $self->from($bookmark->from);
     $self->group($bookmark->group);
     $self->text($bookmark->text);
+    $self->args($bookmark->args) 
+        if $self->has_args or $bookmark->has_args;
     return;
 }
 
@@ -260,24 +386,18 @@ sub set_bookmark_do {
 
 =head2 match_next
 
-  my $value = $message->match_next(qr{bar[rz]});
+  my $value = $message->match_next('!command');
+  my $value = $message->metch_next(qr{!(?:this|that)});
 
-Given a regular expression or string, matches that against the start of the
-message and strips off the match. It returns the match if the match is
-successful or returns C<undef>.
+Given a regular expression or string, matches that against the next argument in the L</args> and strips off the match. It returns the match if the match is
+successful or returns C<undef>. If given a regular express, the match will not succeed unless it matches the entire argument (i.e., a C<^> is added to the front and C<$> is added to the end).
 
 =cut
 
 sub match_next {
-    my ($self, $regex) = @_;
-
-    my $text = $self->text;
-    if ($text =~ s/^($regex)\s*//) {
-        my $value = $1;
-        $self->text($text);
-        return $value;
-    }
-
+    my ($self, $match) = @_;
+    $match = quotemeta $match unless ref $match;
+    return $self->shift_args->text if $self->args->[0]->text =~ /^$match$/;
     return;
 }
 
