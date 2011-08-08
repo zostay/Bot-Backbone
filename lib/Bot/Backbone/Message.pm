@@ -119,10 +119,11 @@ has args => (
     predicate   => 'has_args',
     traits      => [ 'Array' ],
     handles     => {
-        'shift_args'   => 'shift',
-        'unshift_args' => 'unshift',
-        'pop_args'     => 'pop',
-        'push_args'    => 'push',
+        'shift_args'    => 'shift',
+        'unshift_args'  => 'unshift',
+        'pop_args'      => 'pop',
+        'push_args'     => 'push',
+        'has_more_args' => 'count',
     },
 );
 
@@ -254,14 +255,14 @@ predicates while processing the message.
 =cut
 
 has parameters => (
-    is          => 'ro',
+    is          => 'rw',
     isa         => 'HashRef',
     required    => 1,
     default     => sub { +{} },
     traits      => [ 'Hash' ],
     handles     => {
-        set_parameter => 'set',
-        get_parameter => 'get',
+        set_parameter    => 'set',
+        get_parameter    => 'get',
     },
 );
 
@@ -328,11 +329,12 @@ Saves the current message in the bookmarks stack.
 sub set_bookmark {
     my $self = shift;
     my $bookmark = Bot::Backbone::Message->new(
-        chat  => $self->chat,
-        to    => $self->to,
-        from  => $self->from,
-        group => $self->group,
-        text  => $self->text,
+        chat       => $self->chat,
+        to         => $self->to,
+        from       => $self->from,
+        group      => $self->group,
+        text       => $self->text,
+        parameters => { %{ $self->parameters } },
     );
     $bookmark->args([ map { $_->clone } @{ $self->args } ]) 
         if $self->has_args;
@@ -340,15 +342,15 @@ sub set_bookmark {
     return;
 }
 
-=head2 restore_bookark
+=head2 restore_bookmark
 
   $mesage->restore_bookmark;
 
 Avoid using this method. See L</set_bookmark_do>.
 
 Restores the bookmark on the top of the bookmarks stack. The L</to>,
-L</from>, L</group>, L</text>, and L</args> are restored. All other attribute
-modifications will stick.
+L</from>, L</group>, L</text>, L</parameters>, and L</args> are restored. All
+other attribute modifications will stick.
 
 =cut
 
@@ -361,6 +363,7 @@ sub restore_bookmark {
     $self->text($bookmark->text);
     $self->args($bookmark->args) 
         if $self->has_args or $bookmark->has_args;
+    $self->parameters({ %{ $bookmark->parameters } });
     return;
 }
 
@@ -396,8 +399,15 @@ successful or returns C<undef>. If given a regular express, the match will not s
 
 sub match_next {
     my ($self, $match) = @_;
+
     $match = quotemeta $match unless ref $match;
-    return $self->shift_args->text if $self->args->[0]->text =~ /^$match$/;
+
+    if ($self->has_more_args and $self->args->[0]->text =~ /^$match$/) {
+        my $arg = $self->shift_args;
+        $self->text(substr $self->text, length $arg->original);
+        return $arg->text;
+    }
+
     return;
 }
 

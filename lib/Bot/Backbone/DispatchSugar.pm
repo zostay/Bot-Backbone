@@ -101,7 +101,10 @@ sub given_parameters(&$) {
                 my ($name, $config) = @$arg;
                 my $match = $config->{match};
 
-                if (my $value = $message->match_next($match)) {
+                if (exists $config->{default} and not $message->has_more_args) {
+                    $message->set_parameter($name => $config->{default});
+                }
+                elsif (my $value = $message->match_next($match)) {
                     $message->set_parameter($name => $value);
                 }
                 else {
