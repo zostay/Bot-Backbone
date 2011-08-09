@@ -99,15 +99,41 @@ sub given_parameters(&$) {
         return $message->set_bookmark_do(sub {
             for my $arg (@args) {
                 my ($name, $config) = @$arg;
-                my $match = $config->{match};
 
-                if (exists $config->{default} and not $message->has_more_args) {
-                    $message->set_parameter($name => $config->{default});
+                # Match against ->args
+                if (defined $config->{match}) {
+                    my $match = $config->{match};
+
+                    if (exists $config->{default} 
+                            and not $message->has_more_args) {
+                        $message->set_parameter($name => $config->{default});
+                    }
+                    elsif (my $value = $message->match_next($match)) {
+                        $message->set_parameter($name => $value);
+                    }
+                    else {
+                        return '';
+                    }
                 }
-                elsif (my $value = $message->match_next($match)) {
-                    $message->set_parameter($name => $value);
+
+                # Match against ->text
+                elsif (defined $config->{match_original}) {
+                    my $match = $config->{match_original};
+
+                    if (my $value = $message->match_next_original($match)) {
+                        $message->set_parameter($name => $value);
+                    }
+                    elsif (exists $config->{default}) {
+                        $message->set_parameter($name => $config->{default});
+                    }
+                    else {
+                        return '';
+                    }
                 }
+
+                # What the...?
                 else {
+                    Carp::carp("parameter $name missing 'match' or 'match_original'");
                     return '';
                 }
             }

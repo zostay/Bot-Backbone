@@ -421,6 +421,30 @@ sub match_next {
     return;
 }
 
+=head2 match_next_original
+
+  my $value = $message->match_next_original(qr{.+});
+
+Given a regular expression, this will match that against the remaining unmatched text (not via L</args>, but via the unparsed L</text>). A C<^> at the front of the regex will be added to match against L</text>.
+
+If there's a match, the matching text is returned.
+
+=cut
+
+sub match_next_original {
+    my ($self, $match) = @_;
+
+    my $text = $self->text;
+    if ($text =~ s/^($match)//) {
+        my $value = $1;
+        $self->text($text);
+        $self->args($self->_build_args) if $self->has_args; # reinit args
+        return $value;
+    }
+
+    return;
+}
+
 =head2 reply
 
   $message->reply('blah blah blah');
