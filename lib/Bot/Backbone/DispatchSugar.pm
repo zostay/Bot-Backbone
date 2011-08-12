@@ -108,11 +108,14 @@ sub given_parameters(&$) {
                             and not $message->has_more_args) {
                         $message->set_parameter($name => $config->{default});
                     }
-                    elsif (my $value = $message->match_next($match)) {
-                        $message->set_parameter($name => $value);
-                    }
                     else {
-                        return '';
+                        my $value = $message->match_next($match);
+                        if (defined $value) {
+                            $message->set_parameter($name => $value);
+                        }
+                        else {
+                            return '';
+                        }
                     }
                 }
 
@@ -120,7 +123,8 @@ sub given_parameters(&$) {
                 elsif (defined $config->{match_original}) {
                     my $match = $config->{match_original};
 
-                    if (my $value = $message->match_next_original($match)) {
+                    my $value = $message->match_next_original($match);
+                    if (defined $value) {
                         $message->set_parameter($name => $value);
                     }
                     elsif (exists $config->{default}) {
