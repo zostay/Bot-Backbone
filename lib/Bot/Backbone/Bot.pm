@@ -3,7 +3,7 @@ use v5.10;
 use Moose;
 
 use Bot::Backbone::Types qw( EventLoop ServiceList );
-use POE;
+use POE qw( Loop::EV );
 
 # ABSTRACT: Provides backbone services to your bot
 
@@ -138,5 +138,15 @@ sub shutdown {
     $_->shutdown for ($self->list_services);
     $self->destroy_services;
 }
+
+=head1 CAVEATS
+
+This thing sort of kind of needs L<POE> to be any kind of useful. However, L<POE> seems to have weird drawbacks. I have some planned work-arounds for this being an explicit and required dependency, but it's there for now.
+
+Second, if you use the Jabber chat service, you need L<AnyEvent>. Mostly, L<AnyEvent> and L<POE> seem to get along, but it's slow and I've found that timers, in particular, just plain don't work quite right.
+
+Finally, in order to marry AnyEvent and POE in a way that is faster and seems to work more consisently, I also require the use of L<POE::Loop::EV>, which, of course, depends on L<EV>. If that's a problem for you, drop me a line or submit a patch and we'll see if we can work this problem out.
+
+=cut
 
 __PACKAGE__->meta->make_immutable;

@@ -103,6 +103,8 @@ has text => (
             text     => $self->text,
         );
     }
+
+    __PACKAGE__->meta->make_immutable;
 }
 
 =head2 args
