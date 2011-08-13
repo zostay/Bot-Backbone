@@ -4,7 +4,7 @@ use Moose();
 use Bot::Backbone::DispatchSugar();
 use Moose::Exporter;
 
-use Bot::Backbone::Meta::Class;
+use Bot::Backbone::Meta::Class::Bot;
 use Bot::Backbone::Dispatcher;
 
 our $DEBUG = '';
@@ -183,7 +183,7 @@ sub init_meta {
     shift;
     return Moose->init_meta(@_, 
         base_class => 'Bot::Backbone::Bot',
-        metaclass  => 'Bot::Backbone::Meta::Class',
+        metaclass  => 'Bot::Backbone::Meta::Class::Bot',
     );
 }
 
@@ -219,8 +219,9 @@ sub dispatcher($$) {
 
     my $dispatcher = Bot::Backbone::Dispatcher->new;
     {
-        local $_ = $dispatcher;
+        $meta->building_dispatcher($dispatcher);
         $code->();
+        $meta->no_longer_building_dispatcher;
     }
 
     debug("add_dispatcher($name, ...)");

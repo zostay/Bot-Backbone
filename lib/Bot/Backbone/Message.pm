@@ -43,6 +43,9 @@ has from => (
     is          => 'rw',
     isa         => 'Bot::Backbone::Identity',
     required    => 1,
+    handles     => {
+        'is_from_me' => 'is_me',
+    },
 );
 
 =head2 to
@@ -60,6 +63,9 @@ has to => (
     is          => 'rw',
     isa         => 'Maybe[Bot::Backbone::Identity]',
     required    => 1,
+    handles     => {
+        '_is_to_me' => 'is_me',
+    },
 );
 
 =head2 group
@@ -289,7 +295,7 @@ Returns true if this message was sent directly to the receipient.
 =cut
 
 sub is_group  { defined shift->group }
-sub is_direct { not defined shift->group }
+sub is_direct { defined shift->to }
 
 =head2 add_flag
 
@@ -327,6 +333,18 @@ sub remove_flag  { my $self = shift; delete $self->flags->{$_} for @_ }
 sub remove_flags { my $self = shift; delete $self->flags->{$_} for @_ }
 sub has_flag     { my $self = shift; all { $self->flags->{$_} } @_ }
 sub has_flags    { my $self = shift; all { $self->flags->{$_} } @_ }
+
+=head2 is_to_me
+
+Returns true of the message is to me.
+
+=cut
+
+sub is_to_me {
+    my $self = shift;
+    return '' unless $self->is_direct;
+    return $self->to->is_me;
+}
 
 =head2 set_bookmark
 

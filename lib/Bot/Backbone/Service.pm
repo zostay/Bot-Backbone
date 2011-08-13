@@ -5,6 +5,7 @@ use Bot::Backbone::DispatchSugar();
 use Moose::Exporter;
 use Moose::Util qw( ensure_all_roles );
 
+use Bot::Backbone::Meta::Class::Service;
 use Bot::Backbone::Dispatcher;
 use Bot::Backbone::Role::Service;
 
@@ -52,12 +53,14 @@ Setup the bot package by applying the L<Bot::Backbone::Role::Service> role to th
 
 sub init_meta {
     shift;
-    Moose->init_meta(@_);
+    Moose->init_meta(@_, 
+        metaclass => 'Bot::Backbone::Meta::Class::Service',
+    );
 };
 
 =head1 SETUP ROUTINES
 
-=head2 dispatcher
+=head2 service_dispatcher
 
   service_dispatcher ...;
 
@@ -81,8 +84,9 @@ sub service_dispatcher($) {
         default => sub {
             my $dispatcher = Bot::Backbone::Dispatcher->new;
             {
-                local $_ = $dispatcher;
+                $meta->building_dispatcher($dispatcher);
                 $code->();
+                $meta->no_longer_building_dispatcher,
             }
             return $dispatcher;
         },

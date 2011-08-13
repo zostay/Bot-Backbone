@@ -411,10 +411,12 @@ sub got_direct_message {
         from => Bot::Backbone::Identity->new(
             username => $from_contact->jid,
             nickname => $from_contact->name // $from_contact->jid,
+            me       => $from_contact->is_me,
         ),
         to   => Bot::Backbone::Identity->new(
             username => $to_contact->jid,
             nickname => $to_contact->name // $to_contact->jid,
+            me       => $to_contact->is_me,
         ),
         group => undef,
         text  => $xmpp_message->body,
@@ -453,11 +455,27 @@ sub got_group_message {
 
     # Figure out who sent this message
     my $from_user = $room->get_user($xmpp_message->from_nick);
-    my $real_jid  = $from_user->real_jid;
 
     # Prefer the real JID as the username
-    my $from_username = $from_user->real_jid // $xmpp_message->from_nick;
-    my $from_nickname = $xmpp_message->from_nick;
+    my $from_username = $from_user->real_jid // $from_user->in_room_jid;
+    my $from_nickname = $from_user->nick;
+
+    # This will never actually be true right now, but in case I decide
+    # handling echos is a good thing someday...
+    my $me_user = $room->get_me;
+    my $is_me   = $me_user->in_room_jid eq $from_user->in_room_jid;
+
+    # See if the group message is talking to us...
+    my $to_identity;
+    my $me_nick = $me_user->nick;
+    my $text    = $xmpp_message->body;
+    if ($text =~ s/^ $me_nick [:,] //x) {
+        $to_identity = Bot::Backbone::Identity->new(
+            username => $me_user->real_jid // $me_user->in_room_jid,
+            nickname => $me_user->nick,
+            me       => 1,
+        );
+    }
 
     # Build the message
     my $message = Bot::Backbone::Message->new({
@@ -465,10 +483,11 @@ sub got_group_message {
         from => Bot::Backbone::Identity->new(
             username => $from_username,
             nickname => $from_nickname,
+            me       => $is_me,
         ),
-        to    => undef,
+        to    => $to_identity,
         group => $group,
-        text  => $xmpp_message->body,
+        text  => $text,
     });
 
     # Pass it on

@@ -15,19 +15,21 @@ See L<Bot::Backbone> and L<Bot::Backbone::Service>.
 =cut
 
 Moose::Exporter->setup_import_methods(
-    as_is => [ qw( 
+    with_meta => [ qw( 
         command not_command
-        given_parameters parameter 
-        as 
+        to_me not_to_me
+        given_parameters
         also
         respond respond_by_method 
+        run_this run_this_method
         redispatch_to 
     ) ],
+    as_is => [ qw( parameter as ) ],
 );
 
 sub redispatch_to($) {
-    my ($name) = @_;
-    my $dispatcher = $_;
+    my ($meta, $name) = @_;
+    my $dispatcher = $meta->building_dispatcher;
 
     $dispatcher->add_predicate_or_return(sub {
         my ($service, $message) = @_;
@@ -38,8 +40,8 @@ sub redispatch_to($) {
 }
 
 sub also($) {
-    my ($code) = @_;
-    my $dispatcher = $_;
+    my ($meta, $code) = @_;
+    my $dispatcher = $meta->building_dispatcher;
 
     $dispatcher->add_also_predicate(sub {
         my ($service, $message) = @_;
@@ -48,8 +50,8 @@ sub also($) {
 }
 
 sub command($$) { 
-    my ($name, $code) = @_;
-    my $dispatcher = $_;
+    my ($meta, $name, $code) = @_;
+    my $dispatcher = $meta->building_dispatcher;
 
     $dispatcher->add_predicate_or_return(sub {
         my ($service, $message) = @_;
@@ -68,8 +70,8 @@ sub command($$) {
 }
 
 sub not_command($) {
-    my ($code) = @_;
-    my $dispatcher = $_;
+    my ($meta, $code) = @_;
+    my $dispatcher = $meta->building_dispatcher;
 
     $dispatcher->add_predicate_or_return(sub {
         my ($service, $message) = @_;
@@ -82,10 +84,40 @@ sub not_command($) {
     });
 }
 
+sub to_me($) {
+    my ($meta, $code) = @_;
+    my $dispatcher = $meta->building_dispatcher;
+
+    $dispatcher->add_predicate_or_return(sub {
+        my ($service, $message) = @_;
+
+        if ($message->is_to_me) {
+            return $code->($service, $message);
+        }
+
+        return '';
+    });
+}
+
+sub not_to_me($) {
+    my ($meta, $code) = @_;
+    my $dispatcher = $meta->building_dispatcher;
+
+    $dispatcher->add_predicate_or_return(sub {
+        my ($service, $message) = @_;
+
+        unless ($message->is_to_me) {
+            return $code->($service, $message);
+        }
+
+        return '';
+    });
+}
+
 our $WITH_ARGS;
 sub given_parameters(&$) {
-    my ($arg_code, $code) = @_;
-    my $dispatcher = $_;
+    my ($meta, $arg_code, $code) = @_;
+    my $dispatcher = $meta->building_dispatcher;
 
     my @args;
     {
@@ -157,9 +189,9 @@ sub as(&) {
     return $code;
 }
 
-sub respond(&) { 
-    my $code = shift;
-    my $dispatcher = $_;
+sub _respond { 
+    my ($meta, $code) = @_;
+    my $dispatcher = $meta->building_dispatcher;
 
     $dispatcher->add_predicate_or_return(sub {
         my ($service, $message) = @_;
@@ -177,8 +209,31 @@ sub respond(&) {
     });
 }
 
+sub respond(&) {
+    my ($meta, $code) = @_;
+    _respond($meta, $code);
+}
+
+sub _run_this {
+    my ($meta, $code) = @_;
+    my $dispatcher = $meta->building_dispatcher;
+
+    $dispatcher->add_predicate_or_return(sub {
+        my ($service, $message) = @_;
+        return $code->($service, $message);
+    });
+}
+
+sub run_this(&) {
+    my ($meta, $code) = @_;
+    _run_this($meta, $code);
+}
+
 sub _by_method {
-    my ($name) = @_;
+    my ($meta, $name) = @_;
+
+    Carp::croak("no such method as $name found on ", $meta->name)
+        unless defined $meta->find_method_by_name($name);
 
     return sub {
         my ($service, $message) = @_;
@@ -194,10 +249,17 @@ sub _by_method {
 }
 
 sub respond_by_method($) {
-    my ($name) = @_;
+    my ($meta, $name) = @_;
 
-    my $code = _by_method($name);
-    respond(\&$code);
+    my $code = _by_method($meta, $name);
+    _respond($meta, \&$code);
+}
+
+sub run_this_method($) {
+    my ($meta, $name) = @_;
+
+    my $code = _by_method($meta, $name);
+    _run_this($meta, \&$code);
 }
 
 1;

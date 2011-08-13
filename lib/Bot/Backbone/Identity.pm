@@ -41,4 +41,20 @@ has nickname => (
     predicate   => 'has_nickname',
 );
 
+=head2 me
+
+This is a boolean value that should be set to true if this identity identifies the robot itself. 
+
+And, by the way, the accessor for this is named C<is_me>.
+
+=cut
+
+has me  => (
+    isa         => 'Bool',
+    accessor    => 'is_me',
+    required    => 1,
+    default     => 0,
+);
+
+
 __PACKAGE__->meta->make_immutable;

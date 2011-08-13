@@ -1,7 +1,8 @@
-package Bot::Backbone::Meta::Class;
+package Bot::Backbone::Meta::Class::Bot;
 use Moose;
 
 extends 'Moose::Meta::Class';
+with 'Bot::Backbone::Meta::Class::DispatchBuilder';
 
 # ABSTRACT: Metaclass attached to backbone bots
 
