@@ -1,12 +1,16 @@
 package Bot::Backbone::Service::GroupChat;
 use v5.10;
-use Moose;
+use Bot::Backbone::Service;
 
 with qw(
     Bot::Backbone::Service::Role::Service
     Bot::Backbone::Service::Role::Dispatch
     Bot::Backbone::Service::Role::Chat
     Bot::Backbone::Service::Role::ChatConsumer
+);
+
+with_bot_roles qw(
+    Bot::Backbone::Bot::Role::GroupChat
 );
 
 # ABSTRACT: A helper chat for performing group chats
