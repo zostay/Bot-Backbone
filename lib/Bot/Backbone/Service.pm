@@ -41,7 +41,7 @@ This is a Moose-replacement for bot backbone services. It provides a similar set
 =cut
 
 Moose::Exporter->setup_import_methods(
-    with_meta => [ qw( service_dispatcher ) ],
+    with_meta => [ qw( service_dispatcher with_bot_roles ) ],
     also      => [ qw( Moose Bot::Backbone::DispatchSugar ) ],
 );
 
@@ -59,6 +59,20 @@ sub init_meta {
 };
 
 =head1 SETUP ROUTINES
+
+=head2 with_bot_roles
+
+  with_bot_roles ...;
+
+Similar to C<with> provided by L<Moose>, this defines a list of roles that should be applied to the bot that uses this service.
+
+=cut
+
+sub with_bot_roles {
+    my ($meta, @roles) = @_;
+    Class::MOP::load_class($_) for @roles;
+    $meta->add_bot_roles(@roles);
+}
 
 =head2 service_dispatcher
 

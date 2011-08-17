@@ -84,17 +84,6 @@ sub construct_services {
         next if defined $self->services->{$name};
 
         my $class_name = $service_config->{service};
-        if ($class_name =~ s/^\.//) {
-            $class_name = join '::', $my_name, 'Service', $class_name;
-        }
-        elsif ($class_name =~ s/^=//) {
-            # do nothing, we now have the exact name
-        }
-        else {
-            $class_name = join '::', 'Bot::Backbone::Service', $class_name;
-        }
-
-        Class::MOP::load_class($class_name);
         my $service = $class_name->new(
             %$service_config,
             name => $name,

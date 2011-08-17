@@ -200,7 +200,27 @@ Add a new service configuration.
 sub service($%) {
     my ($meta, $name, %config) = @_;
 
+    my $class_name = $config{service};
+    if ($class_name =~ s/^\.//) {
+        $class_name = join '::', $meta->name, 'Service', $class_name;
+    }
+    elsif ($class_name =~ s/^=//) {
+        # do nothing, we now have the exact name
+    }
+    else {
+        $class_name = join '::', 'Bot::Backbone::Service', $class_name;
+    }
+
+    Class::MOP::load_class($class_name);
+    $config{service} = $class_name;
+
     $meta->add_service($name, \%config);
+
+    if (my $service_meta = Moose::Util::find_meta($class_name)) {
+        Moose::Util::ensure_all_roles($meta, $service_meta->all_bot_roles)
+            if $service_meta->isa('Bot::Backbone::Meta::Class::Service')
+           and $service_meta->has_bot_roles;
+    }
 }
 
 =head2 dispatcher
