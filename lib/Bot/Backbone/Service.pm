@@ -7,7 +7,7 @@ use Moose::Util qw( ensure_all_roles );
 
 use Bot::Backbone::Meta::Class::Service;
 use Bot::Backbone::Dispatcher;
-use Bot::Backbone::Role::Service;
+use Bot::Backbone::Service::Role::Service;
 
 # ABSTRACT: Useful features for services
 
@@ -17,7 +17,7 @@ use Bot::Backbone::Role::Service;
   use v5.14; # because newer Perl is cooler than older Perl
   use Bot::Backbone::Service;
 
-  with 'Bot::Backbone::Role::Service';
+  with 'Bot::Backbone::Service::Role::Service';
 
   dispatch as {
       command '!echo' => given_parameters {
@@ -47,7 +47,7 @@ Moose::Exporter->setup_import_methods(
 
 =head2 init_meta
 
-Setup the bot package by applying the L<Bot::Backbone::Role::Service> role to the class.
+Setup the bot package by applying the L<Bot::Backbone::Service::Role::Service> role to the class.
 
 =cut
 
@@ -64,14 +64,14 @@ sub init_meta {
 
   service_dispatcher ...;
 
-Setup the default dispatcher for this service. Use of this method will cause the L<Bot::Backbone::Role::Dispatch> role to be applied to the class.
+Setup the default dispatcher for this service. Use of this method will cause the L<Bot::Backbone::Service::Role::Dispatch> role to be applied to the class.
 
 =cut
 
 sub service_dispatcher($) {
     my ($meta, $code) = @_;
 
-    ensure_all_roles($meta->name, 'Bot::Backbone::Role::Dispatch');
+    ensure_all_roles($meta->name, 'Bot::Backbone::Service::Role::Dispatch');
 
     my $dispatcher_name_attr = $meta->find_attribute_by_name('dispatcher_name');
     my $new_dispatcher_name_attr = $dispatcher_name_attr->clone_and_inherit_options(

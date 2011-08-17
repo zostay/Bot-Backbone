@@ -234,7 +234,7 @@ sub dispatcher($$) {
 
   redispatch_to 'service_name';
 
-Given a service name for a service implementing L<Bot::Backbone::Role::Dispatch>, we will ask the dispatcher on that object (if any) to perform dispatch.
+Given a service name for a service implementing L<Bot::Backbone::Service::Role::Dispatch>, we will ask the dispatcher on that object (if any) to perform dispatch.
 
 =cut
 

@@ -20,14 +20,14 @@ use List::MoreUtils qw( all );
 
 =head2 chat
 
-This is the L<Bot::Backbone::Role::Chat> chat engine where the message
+This is the L<Bot::Backbone::Service::Role::Chat> chat engine where the message
 originated.
 
 =cut
 
 has chat => (
     is          => 'ro',
-    does        => 'Bot::Backbone::Role::Chat',
+    does        => 'Bot::Backbone::Service::Role::Chat',
     required    => 1,
     weak_ref    => 1,
 );

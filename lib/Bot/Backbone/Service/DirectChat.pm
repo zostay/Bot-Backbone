@@ -3,10 +3,10 @@ use v5.10;
 use Moose;
 
 with qw(
-    Bot::Backbone::Role::Service
-    Bot::Backbone::Role::Dispatch
-    Bot::Backbone::Role::Chat
-    Bot::Backbone::Role::ChatConsumer
+    Bot::Backbone::Service::Role::Service
+    Bot::Backbone::Service::Role::Dispatch
+    Bot::Backbone::Service::Role::Chat
+    Bot::Backbone::Service::Role::ChatConsumer
 );
 
 # ABSTRACT: A helper for doing direct chats

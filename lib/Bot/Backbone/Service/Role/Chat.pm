@@ -1,4 +1,4 @@
-package Bot::Backbone::Role::Chat;
+package Bot::Backbone::Service::Role::Chat;
 use v5.10;
 use Moose::Role;
 
@@ -15,7 +15,7 @@ L<Bot::Backbone::Service::JabberChat>.
 
 =head2 chat_consumers
 
-This is a list of L<Bot::Backbone::Role::ChatConsumer>s that hvae registered to
+This is a list of L<Bot::Backbone::Service::Role::ChatConsumer>s that hvae registered to
 receive messages from this chat service. A chat consumer is registered using the
 C<register_chat_cnosumer> method. A C<list_chat_consumers> method is provided to
 list the registered consumers.
@@ -24,7 +24,7 @@ list the registered consumers.
 
 has chat_consumers => (
     is          => 'ro',
-    isa         => 'ArrayRef', # 'ArrayRef[DOES Bot::Backbone::Role::ChatConsumer]',
+    isa         => 'ArrayRef', # 'ArrayRef[DOES Bot::Backbone::Service::Role::ChatConsumer]',
     required    => 1,
     default     => sub { [] },
     traits      => [ 'Array' ],

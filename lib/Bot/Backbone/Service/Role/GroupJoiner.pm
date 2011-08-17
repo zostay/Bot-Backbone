@@ -1,4 +1,4 @@
-package Bot::Backbone::Role::GroupJoiner;
+package Bot::Backbone::Service::Role::GroupJoiner;
 use v5.10;
 use Moose::Role;
 

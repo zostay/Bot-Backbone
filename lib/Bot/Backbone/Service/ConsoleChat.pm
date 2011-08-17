@@ -3,9 +3,9 @@ use v5.10;
 use Moose;
 
 with qw(
-    Bot::Backbone::Role::Service
-    Bot::Backbone::Role::Dispatch
-    Bot::Backbone::Role::Chat
+    Bot::Backbone::Service::Role::Service
+    Bot::Backbone::Service::Role::Dispatch
+    Bot::Backbone::Service::Role::Chat
 );
 
 use Bot::Backbone::Message;

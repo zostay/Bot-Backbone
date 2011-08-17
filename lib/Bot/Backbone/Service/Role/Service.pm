@@ -1,4 +1,4 @@
-package Bot::Backbone::Role::Service;
+package Bot::Backbone::Service::Role::Service;
 use Moose::Role;
 
 # ABSTRACT: Role implemented by all bot services

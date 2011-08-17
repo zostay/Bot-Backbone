@@ -1,4 +1,4 @@
-package Bot::Backbone::Role::ChatConsumer;
+package Bot::Backbone::Service::Role::ChatConsumer;
 use v5.10;
 use Moose::Role;
 
@@ -33,7 +33,7 @@ has chat_name => (
 
 =head2 chat
 
-This is the L<Bot::Backbone::Role::Chat> that this responder will receive
+This is the L<Bot::Backbone::Service::Role::Chat> that this responder will receive
 messages from.
 
 This must not be set directly and will be loaded lazily for you from the setting
@@ -43,7 +43,7 @@ in L</chat_name>.
 
 has chat => (
     is          => 'ro',
-    does        => 'Bot::Backbone::Role::Chat',
+    does        => 'Bot::Backbone::Service::Role::Chat',
     init_arg    => undef,
     lazy_build  => 1,
     weak_ref    => 1,

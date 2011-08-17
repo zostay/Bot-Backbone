@@ -1,4 +1,4 @@
-package Bot::Backbone::Role::Dispatch;
+package Bot::Backbone::Service::Role::Dispatch;
 use v5.10;
 use Moose::Role;
 

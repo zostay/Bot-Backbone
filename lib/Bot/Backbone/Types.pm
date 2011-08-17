@@ -43,13 +43,13 @@ subtype PredicateList,
 
 =head2 ServiceList
 
-This is a hash of objects that implement L<Bot::Backbone::Role::Service>.
+This is a hash of objects that implement L<Bot::Backbone::Service::Role::Service>.
 
 =cut
 
-class_type 'Bot::Backbone::Role::Service';
+class_type 'Bot::Backbone::Service::Role::Service';
 subtype ServiceList,
     as HashRef[Object],
-    where { all { blessed $_ and $_->does('Bot::Backbone::Role::Service') } values %$_ };
+    where { all { blessed $_ and $_->does('Bot::Backbone::Service::Role::Service') } values %$_ };
 
 __PACKAGE__->meta->make_immutable;
