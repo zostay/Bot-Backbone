@@ -1,0 +1,16 @@
+# Bot-Backbone
+
+This is a toolkit for building chat bots. It is intended to provide a way to
+build a bot from generic components that can be reused. As of this writing, it
+only supports chats over Jabber, but IRC chats could be added at anytime
+(patches welcome).
+
+If you download it from github, you will need to install it using Dist::Zilla.
+
+The preferred installation would be to fetch it from CPAN:
+
+    cpanm Bot::Backbone
+
+or if you don't have App::cpanminus installed (you should), you can run:
+
+    perl -MCPAN -e 'install Bot::Backbone'
