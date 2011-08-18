@@ -68,7 +68,7 @@ sub debug { warn @_, "\n" if $DEBUG }
       };
 
       # Include the pastebin commands (whatever they may be)
-      dispatch_to 'pastebin';
+      redispatch_to 'pastebin';
 
       # Look for wikiwords in a comment and report the summaries for each
       not_to_me matching qr/\[\[\w+\]\]/ => respond {
@@ -93,7 +93,7 @@ sub debug { warn @_, "\n" if $DEBUG }
       #  - not_command: but not if a command matched
       #  - not_to_me: but not if addressed to me
       #  - run: run this code, but do not respond
-      also not_command not_to_me run { 
+      also not_command not_to_me run_this { 
           my ($self, $message) = @_;
           $self->megahal->learn($message->text);
       };
@@ -126,32 +126,48 @@ IRC server or even just a local REPL for running commands on the console. A
 single bot may have multiple connections to these servers by running more than
 one chat service.
 
-=item Channel Service
+See L<Bot::Backbone::Service::JabberChat> and
+L<Bot::Backbone::Service::ConsoleChat> for examples.
+
+See L<Bot::Backbone::Service::Role::Chat> for responsibilities.
+
+=item Group Service
 
 These will ask a chat service to join a particular room or channel.
+
+See L<Bot::Backbone::Service::GroupChat>.
 
 =item Direct Message Service
 
 These services are similar to Channel services, but are used to connect to
 another individual account or a list of other accounts.
 
+See L<Bot::Backbone::Service::DirectChat>.
+
 =item Dispatched Service
 
 A dispatched service may provide a group of common commands to the dispatcher.
 
-=item Messaging Service
+See L<Bot::Backbone::Service> for help on building such a service and see
+L<Bot::Backbone::Service::Role::ChatConsumer> for responsibilities.
 
-A messaging service might post messages into a chat to notify others on a
-channel of events, or new posts to a blog, etc.
+=item Other Services
 
-=item External Service
+These could do anything you could imagine: search the web or your wiki, check
+your email, notify you of new messages, monitor server logs, run RiveScript, run
+a Markov Chain-based conversation, manage a pastebin, play Russian Roulette, or
+whatever.
 
-An external service could provide a web server for interaction or connect to a
-MQ server to wait for commands or to post commands, etc.
+I have written a few of these services and may publish someday in separate
+projects in the future.
 
 =back
 
 Basically, services are the place for any kind of tool the bot might need.
+Simple services might be embedded into the bot itself, but it's recommended for
+simplicity that the large dispatcher above not be emulated. Instead separate
+each sub-application in your bot into a service to make them easier to maintain
+separately.
 
 =head2 Dispatcher
 
@@ -256,8 +272,6 @@ sub dispatcher($$) {
 
 Given a service name for a service implementing L<Bot::Backbone::Service::Role::Dispatch>, we will ask the dispatcher on that object (if any) to perform dispatch.
 
-=cut
-
 =head2 command
 
   command $name => ...;
@@ -267,8 +281,6 @@ text. It only matches an exact string and only messages not preceded by
 whitespace (unless the message is addressed to the bot, in which case whitespace
 is allowed).
 
-=cut
-
 =head2 not_command
 
   not_command ...;
@@ -276,46 +288,53 @@ is allowed).
 This is not useful unless paired with the L</also> predicate. This only matches
 if no command has been matched so far for the current message.
 
-=cut
-
-# sub not_command($$) { 
-#     my ($name, $code) = @_;
-#     my $dispatcher = $_;
-# 
-#     my $new_code = sub {
-#         my $message = shift;
-#         return $code->($message) unless $message->is_command;
-#         return ();
-#     };
-# 
-#     if (defined wantarray) {
-#         return $code;
-#     }
-#     else {
-#         $dispatcher->add_predicate($code);
-#     }
-# }
-
 =head2 given_parameters
 
-  given_parameters { argument $name => %config; ... } ...
+  given_parameters { parameter $name => %config; ... } ...
 
-This is used in conjunction with C<argument> to define arguments expected to
-come next. Each argument is separated by whitespace.
+This is used in conjunction with C<parameter> to define arguments expected to
+come next. 
 
-TODO More detail is needed on what can go into C<%config>.
+If the C<given_parameters> predicate matches completely, the message will have
+each of the named parameters set on the C<parameters> hash inside the nested
+L</run_this> or L</respond>.
+
+The C<%config> may contain the following keys:
+
+=over
+
+=item match
+
+This is a string a regular expression that will be used to match against the
+next part of the input, as if it were a command-line. The string or expression
+must match the entire next chunk (or provide a default) or the dispatcher will
+move on to the next dispatch predicate.
+
+=item match_original
+
+Rather than matching the next command-line split chunk of the input, this
+matches some next portion of the string. If it matches or there is a default
+provided, success. 
+
+=item default
+
+This sets the default. If this is set, the parameter match will always succeed
+and gain this default value if the match itself fails.
+
+=back
+
+You must provide either C<match> or C<match_original> in each parameter.
+Parameters my interleave C<match> and C<match_original> style matches as well
+and Backbone should do the right thing.
 
 =cut
 
-=head2 matching
-
-  matching $regex => ...
-
-Matches any incoming message matching the given regular expression.
-
-=cut
-
-#sub matching($$) { ... }
+# TODO Implement the matching predicate
+# =head2 matching
+# 
+#   matching $regex => ...
+# 
+# Matches any incoming message matching the given regular expression.
 
 =head2 to_me
 
@@ -324,31 +343,12 @@ Matches any incoming message matching the given regular expression.
 Matches messages that are considered directed toward the bot. This may be a
 direct message or a channel message prefixed by the bot's name.
 
-=cut
-
-#sub to_me($) { ... }
-
 =head2 not_to_me
 
   not_to_me ...
 
 This is the opposite of L</to_me>. It matches any message not sent directly to
 the bot.
-
-=cut
-
-#sub not_to_me($) { ... }
-
-=head2 dispatch_to
-
-  dispatch_to $service_name;
-
-This is not really a predicate per se, but causes a nested dispatcher provided
-by a service to be executed.
-
-=cut
-
-#sub dispatch_to($) { ... }
 
 =head2 also
 
@@ -358,10 +358,6 @@ In general, only the run mode operation for the first matching predicate will be
 executed. The C<also> predicate, however, tells the dispatcher to try and match
 against it even if the dispatcher has already responded.
 
-=cut
-
-#sub also($) { ... }
-
 =head1 RUN MODE OPERATIONS
 
 =head2 as
@@ -370,8 +366,6 @@ against it even if the dispatcher has already responded.
 
 This nests another set of dispatchers inside a predicate. Each set of predicates
 defined within will be executed in turn if this run mode oepration is reached.
-
-=cut
 
 =head2 respond
 
@@ -389,26 +383,23 @@ to the user and dispatching will continue as if the predicate had not matched.
 
 =cut
 
-=head2 respond_or_stop
+# TODO Implement the respond_or_stop predicate
+# =head2 respond_or_stop
+# 
+#   respond_or_stop { ... }
+# 
+# This is identical to L</respond>, except that dispatching ends even if the
+# return value is an empty list or C<undef>.
+# 
+# =cut
 
-  response_or_stop { ... }
+=head2 run_this
 
-This is identical to L</respond>, except that dispatching ends even if the
-return value is an empty list or C<undef>.
-
-=cut
-
-#sub respond_or_stop(&) { ... }
-
-=head2 run
-
-  run { ... }
+  run_this { ... }
 
 This will execute the given code ref, passing it the reference to the bot, the
 message, and the service as arguments. The return value is ignored.
 
 =cut
-
-#sub run(&) { ... }
 
 1;
