@@ -59,6 +59,8 @@ has services => (
         add_service      => 'set',
         list_services    => 'values',
         destroy_services => 'clear',
+        has_service      => 'defined',
+        get_service      => 'get',
     },
 );
 
