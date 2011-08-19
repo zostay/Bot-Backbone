@@ -173,4 +173,6 @@ C<run_this_method>. As stated for C<respond>, the first argument is the service 
 
 =back
 
+=cut
+
 1;
