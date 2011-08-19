@@ -38,8 +38,9 @@ This is an array of code references.
 
 =cut
 
+class_type 'Bot::Backbone::Dispatcher::Predicate';
 subtype PredicateList,
-    as ArrayRef[CodeRef];
+    as ArrayRef['Bot::Backbone::Dispatcher::Predicate'];
 
 =head2 ServiceList
 

@@ -4,6 +4,8 @@ use Moose();
 use Moose::Exporter;
 use Carp();
 
+use Bot::Backbone::Dispatcher::Predicate;
+
 # ABSTRACT: Shared sugar methods for dispatch
 
 =head1 DESCRIPTION
@@ -31,92 +33,68 @@ sub redispatch_to($) {
     my ($meta, $name) = @_;
     my $dispatcher = $meta->building_dispatcher;
 
-    $dispatcher->add_predicate_or_return(sub {
-        my ($service, $message) = @_;
-
-        my $redispatch_service = $service->bot->services->{$name};
-        return $redispatch_service->dispatch_message($message);
-    });
+    $dispatcher->add_predicate_or_return(
+        Bot::Backbone::Dispatcher::Predicate::RedispatchTo->new(
+            name => $name,
+        )
+    );
 }
 
 sub also($) {
-    my ($meta, $code) = @_;
+    my ($meta, $predicate) = @_;
     my $dispatcher = $meta->building_dispatcher;
-
-    $dispatcher->add_also_predicate(sub {
-        my ($service, $message) = @_;
-        return $code->($service, $message);
-    });
+    $dispatcher->add_also_predicate($predicate);
 }
 
 sub command($$) { 
-    my ($meta, $name, $code) = @_;
+    my ($meta, $match, $predicate) = @_;
     my $dispatcher = $meta->building_dispatcher;
 
-    $dispatcher->add_predicate_or_return(sub {
-        my ($service, $message) = @_;
-
-        return $message->set_bookmark_do(sub {
-            if ($message->match_next($name)) {
-                $message->add_flag('command');
-                my $result = $code->($service, $message);
-
-                return $result;
-            }
-
-            return '';
-        });
-    });
+    $dispatcher->add_predicate_or_return(
+        Bot::Backbone::Dispatcher::Predicate::Command->new(
+            match          => $match,
+            next_predicate => $predicate,
+        )
+    );
 }
 
 sub not_command($) {
-    my ($meta, $code) = @_;
+    my ($meta, $predicate) = @_;
     my $dispatcher = $meta->building_dispatcher;
 
-    $dispatcher->add_predicate_or_return(sub {
-        my ($service, $message) = @_;
-        
-        unless ($message->has_flag('command')) {
-            return $code->($service, $message);
-        }
-
-        return '';
-    });
+    $dispatcher->add_predicate_or_return(
+        Bot::Backbone::Dispatcher::Predicate::NotCommand->new(
+            next_predicate => $predicate,
+        )
+    );
 }
 
 sub to_me($) {
-    my ($meta, $code) = @_;
+    my ($meta, $predicate) = @_;
     my $dispatcher = $meta->building_dispatcher;
 
-    $dispatcher->add_predicate_or_return(sub {
-        my ($service, $message) = @_;
-
-        if ($message->is_to_me) {
-            return $code->($service, $message);
-        }
-
-        return '';
-    });
+    $dispatcher->add_predicate_or_return(
+        Bot::Backbone::Dispatcher::Predicate::ToMe->new(
+            next_predicate => $predicate,
+        )
+    );
 }
 
 sub not_to_me($) {
-    my ($meta, $code) = @_;
+    my ($meta, $predicate) = @_;
     my $dispatcher = $meta->building_dispatcher;
 
-    $dispatcher->add_predicate_or_return(sub {
-        my ($service, $message) = @_;
-
-        unless ($message->is_to_me) {
-            return $code->($service, $message);
-        }
-
-        return '';
-    });
+    $dispatcher->add_predicate_or_return(
+        Bot::Backbone::Dispatcher::Predicate::ToMe->new(
+            negate         => 1,
+            next_predicate => $predicate,
+        )
+    );
 }
 
 our $WITH_ARGS;
 sub given_parameters(&$) {
-    my ($meta, $arg_code, $code) = @_;
+    my ($meta, $arg_code, $predicate) = @_;
     my $dispatcher = $meta->building_dispatcher;
 
     my @args;
@@ -125,58 +103,12 @@ sub given_parameters(&$) {
         $arg_code->();
     }
 
-    $dispatcher->add_predicate_or_return(sub {
-        my ($service, $message) = @_;
-
-        return $message->set_bookmark_do(sub {
-            for my $arg (@args) {
-                my ($name, $config) = @$arg;
-
-                # Match against ->args
-                if (defined $config->{match}) {
-                    my $match = $config->{match};
-
-                    if (exists $config->{default} 
-                            and not $message->has_more_args) {
-                        $message->set_parameter($name => $config->{default});
-                    }
-                    else {
-                        my $value = $message->match_next($match);
-                        if (defined $value) {
-                            $message->set_parameter($name => $value);
-                        }
-                        else {
-                            return '';
-                        }
-                    }
-                }
-
-                # Match against ->text
-                elsif (defined $config->{match_original}) {
-                    my $match = $config->{match_original};
-
-                    my $value = $message->match_next_original($match);
-                    if (defined $value) {
-                        $message->set_parameter($name => $value);
-                    }
-                    elsif (exists $config->{default}) {
-                        $message->set_parameter($name => $config->{default});
-                    }
-                    else {
-                        return '';
-                    }
-                }
-
-                # What the...?
-                else {
-                    Carp::carp("parameter $name missing 'match' or 'match_original'");
-                    return '';
-                }
-            }
-
-            return $code->($service, $message);
-        });
-    });
+    $dispatcher->add_predicate_or_return(
+        Bot::Backbone::Dispatcher::Predicate::GivenParameters->new(
+            parameters     => \@args,
+            next_predicate => $predicate,
+        )
+    );
 }
 
 sub parameter($@) {
@@ -193,20 +125,11 @@ sub _respond {
     my ($meta, $code) = @_;
     my $dispatcher = $meta->building_dispatcher;
 
-    $dispatcher->add_predicate_or_return(sub {
-        my ($service, $message) = @_;
-
-        my @responses = $code->($service, $message);
-        if (@responses) {
-            for my $response (@responses) {
-                $message->reply($response);
-            }
-
-            return 1;
-        }
-
-        return '';
-    });
+    $dispatcher->add_predicate_or_return(
+        Bot::Backbone::Dispatcher::Predicate::Respond->new(
+            responder => $code,
+        )
+    );
 }
 
 sub respond(&) {
@@ -218,10 +141,11 @@ sub _run_this {
     my ($meta, $code) = @_;
     my $dispatcher = $meta->building_dispatcher;
 
-    $dispatcher->add_predicate_or_return(sub {
-        my ($service, $message) = @_;
-        return $code->($service, $message);
-    });
+    $dispatcher->add_predicate_or_return(
+        Bot::Backbone::Dispatcher::Predicate::Run->new(
+            the_code => $code,
+        )
+    );
 }
 
 sub run_this(&) {
