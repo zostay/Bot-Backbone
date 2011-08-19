@@ -4,7 +4,7 @@ use Moose;
 
 use lib 't/lib';
 use Bot::Backbone::TestEventLoop;
-use Test::More tests => 17;
+use Test::More tests => 29;
 
 use_ok('Bot::Backbone::Message');
 use_ok('Bot::Backbone::Identity');
@@ -59,14 +59,17 @@ my $message = Bot::Backbone::Message->new(
 
 }
 
+sub args_text     { [ map { $_->text     } $message->all_args ] }
+sub args_original { [ map { $_->original } $message->all_args ] }
+
 # Test Args - basic
 
 {
-    is_deeply([ map { $_->original } $message->all_args ], 
+    is_deeply(args_original(),
               [ 'This ', 'is ', 'a ', 'test.' ], 
               'basic args original');
 
-    is_deeply([ map { $_->text } $message->all_args ],
+    is_deeply(args_text(),
               [ 'This', 'is', 'a', 'test.' ],
               'basic args text');
 }
@@ -78,17 +81,40 @@ my $message = Bot::Backbone::Message->new(
     $message->text(q|  This "is a" test. This is a (really thorough) te[st], 
         don't you think? I just {gotta} [ see if ] it 'can' handle this. |);
 
-    is_deeply([ map { $_->original } $message->all_args ],
+    is_deeply(args_original(),
               [ '  This ', '"is a"', ' test. ', 'This ', 'is ', 'a ',
                 '(really thorough)', " te[st], \n        ", "don't ", 'you ', 
                 'think? ', 'I ', 'just ', '{gotta}', ' [ see if ]', ' it ', 
                 "'can'", ' handle ', 'this. ' ],
-              'thorough args original');
+              'complex args original');
 
-    is_deeply([ map { $_->text } $message->all_args ],
+    is_deeply(args_text(),
               [ 'This', 'is a', 'test.', 'This', 'is', 'a', 'really thorough',
                 'te[st],', "don't", 'you', 'think?', 'I', 'just', 'gotta',
                 ' see if ', 'it', "can", 'handle', 'this.' ],
-              'thorough args text');
-      }
+              'complex args text');
+}
 
+
+# Test Matching
+
+{
+    delete $message->{args};
+    $message->text(q[!robot make me a sandwich]);
+
+    ok(!$message->match_next(q[!robo]), '!robo is not a match');
+    is_deeply(args_text(), [ qw( !robot make me a sandwich ) ], 'args unchanged');
+    is($message->text, q[!robot make me a sandwich], 'message unchanged');
+
+    ok($message->match_next(q[!robot]), '!robot is a match');
+    is_deeply(args_text(), [ qw( make me a sandwich ) ], 'args loses !robot');
+    is($message->text, q[make me a sandwich], 'message loses !robot');
+
+    ok(!$message->match_next_original(q[machen]), 'machen is not a match');
+    is_deeply(args_text(), [ qw( make me a sandwich ) ], 'args unchanged');
+    is($message->text, q[make me a sandwich], 'message unchanged');
+
+    ok($message->match_next_original(qr/[aekms ]+/), 'regex matches');
+    is_deeply(args_text(), [ qw( ndwich ) ], 'args loses make me a sa');
+    is($message->text, q[ndwich], 'text loses make me a sa');
+}
