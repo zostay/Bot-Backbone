@@ -106,6 +106,71 @@ sub service_dispatcher($) {
         },
     );
     $meta->add_attribute($new_dispatcher_attr);
+
 }
+
+=head1 DISPATCHER PREDICATES
+
+This exports all the same dispatcher predicates as L<Bot::Backbone>.
+
+=over
+
+=item *
+
+C<redispatch_to>
+
+=item *
+
+C<command>
+
+=item *
+
+C<not_command>
+
+=item *
+
+C<given_parameters> (and C<parameter>)
+
+=item *
+
+C<to_me>
+
+=item *
+
+C<not_to_me>
+
+=item *
+
+C<also>
+
+=back
+
+=head1 RUN MODE OPERATIONS
+
+This exports all the same run mode operations as L<Bot::Backbone>.
+
+=over
+
+=item *
+
+C<as>
+
+=item *
+
+C<respond>. This run mode operation will be passed the service object as the first argument, rather than that bot object.
+
+=item *
+
+C<respond_with_method>. As stated for C<respond>, the first argument is the service object. The method is also a method defined within the current service package rather than the bot.
+
+=item *
+
+C<run_this>. This run mode operation will be passed the service object as the first argument, rather than that bot object.
+
+=item *
+
+C<run_this_method>. As stated for C<respond>, the first argument is the service object. The method is also a method defined within the current service package rather than the bot.
+
+=back
 
 1;

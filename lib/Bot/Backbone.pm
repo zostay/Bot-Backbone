@@ -381,6 +381,14 @@ It will be called in list context and all the values returned will be sent to
 the user. If an empty list or C<undef> is returned, then no message will be sent
 to the user and dispatching will continue as if the predicate had not matched.
 
+=head2 respond_with_method
+
+  respond_with_method 'method_name'
+
+Given the name of a method defined on the current bot package, that method will be called if all the dispatch predicates in front of it match.
+
+It is called and used exactly as described under L</respond>.
+
 =cut
 
 # TODO Implement the respond_or_stop predicate
@@ -399,6 +407,12 @@ to the user and dispatching will continue as if the predicate had not matched.
 
 This will execute the given code ref, passing it the reference to the bot, the
 message, and the service as arguments. The return value is ignored.
+
+=head2 run_this_method
+
+  run_this_method 'method_name'
+
+This will execute the named method on the bot class. It will be called and used in exactly the same way as L</run_this>.
 
 =cut
 
