@@ -159,10 +159,12 @@ sub cli_message {
         from  => Bot::Backbone::Identity->new(
             username => $self->username,
             nickname => $self->nickname,
+            me       => '', # never from me
         ),
         to    => Bot::Backbone::Identity->new(
             username => '(console)',
             nickname => '(console)',
+            me       => 1, # always to me
         ),
         group => undef,
         text  => $text,
