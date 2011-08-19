@@ -22,7 +22,7 @@ use Bot::Backbone::Service::Role::Service;
   dispatch as {
       command '!echo' => given_parameters {
           parameter thing => ( match => qr/.+/ );
-      } respond by_method 'echo_back';
+      } respond_by_method 'echo_back';
   };
 
   sub echo_back {

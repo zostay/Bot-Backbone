@@ -71,7 +71,7 @@ sub debug { warn @_, "\n" if $DEBUG }
       redispatch_to 'pastebin';
 
       # Look for wikiwords in a comment and report the summaries for each
-      not_to_me matching qr/\[\[\w+\]\]/ => respond {
+      also not_to_me respond {
           my ($self, $message) = @_;
 
           my (@wikiwords) = $message->text =~ /\[\[(\w+)\]\]/g;
@@ -327,15 +327,6 @@ You must provide either C<match> or C<match_original> in each parameter.
 Parameters my interleave C<match> and C<match_original> style matches as well
 and Backbone should do the right thing.
 
-=cut
-
-# TODO Implement the matching predicate
-# =head2 matching
-# 
-#   matching $regex => ...
-# 
-# Matches any incoming message matching the given regular expression.
-
 =head2 to_me
 
   to_me ...
@@ -388,18 +379,6 @@ to the user and dispatching will continue as if the predicate had not matched.
 Given the name of a method defined on the current bot package, that method will be called if all the dispatch predicates in front of it match.
 
 It is called and used exactly as described under L</respond>.
-
-=cut
-
-# TODO Implement the respond_or_stop predicate
-# =head2 respond_or_stop
-# 
-#   respond_or_stop { ... }
-# 
-# This is identical to L</respond>, except that dispatching ends even if the
-# return value is an empty list or C<undef>.
-# 
-# =cut
 
 =head2 run_this
 
