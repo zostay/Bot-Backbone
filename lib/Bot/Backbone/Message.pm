@@ -412,9 +412,9 @@ restored to the original using L</restore_bookmark>.
 sub set_bookmark_do {
     my ($self, $code) = @_;
     $self->set_bookmark;
-    $code->();
+    my $result = $code->();
     $self->restore_bookmark;
-    return;
+    return $result;
 }
 
 =head2 match_next
