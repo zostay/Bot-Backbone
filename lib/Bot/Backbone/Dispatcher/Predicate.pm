@@ -6,7 +6,7 @@ use Moose;
 
 =head1 DESCRIPTION
 
-Not much to see here unless you want to define custom predicates. If that is your goal, you must read the code.
+Not much to see here unless you want to define custom predicates. If that is your goal, you must read the code. You probably also want to read the code in L<Bot::Backbone::DispatchSugar> while you're at it.
 
 =cut
 
@@ -24,7 +24,7 @@ __PACKAGE__->meta->make_immutable;
     sub do_it {
         my ($self, $service, $message) = @_;
 
-        my $redispatch_service = $service->bot->get_service($self->name);
+        my $redispatch_service = $service->get_service($self->name);
         return $redispatch_service->dispatch_message($message);
     }
 
@@ -211,26 +211,49 @@ __PACKAGE__->meta->make_immutable;
 }
 
 {
-    package Bot::Backbone::Dispatcher::Predicate::Respond;
+    package Bot::Backbone::Dispatcher::Predicate::Functor;
     use v5.10;
     use Moose;
 
     extends 'Bot::Backbone::Dispatcher::Predicate';
 
-    has responder => (
+    use Bot::Backbone::Types qw( DispatcherType );
+
+    has dispatcher_type => (
+        is          => 'ro',
+        isa         => DispatcherType,
+        required    => 1,
+        coerce      => 1,
+    );
+
+    sub select_invocant {
+        my ($self, $service) = @_;
+        return $self->dispatcher_type eq 'bot' ? $service->bot : $service;
+    }
+
+    has the_code => (
         is          => 'ro',
         isa         => 'CodeRef',
         required    => 1,
         traits      => [ 'Code' ],
         handles     => {
-            'call_responder' => 'execute',
+            'call_the_code' => 'execute',
         },
     );
+}
+
+{
+    package Bot::Backbone::Dispatcher::Predicate::Respond;
+    use v5.10;
+    use Moose;
+
+    extends 'Bot::Backbone::Dispatcher::Predicate::Functor';
 
     sub do_it {
         my ($self, $service, $message) = @_;
 
-        my @responses = $self->call_responder($service, $message);
+        my $invocant = $self->select_invocant($service);
+        my @responses = $self->call_the_code($invocant, $message);
         if (@responses) {
             for my $response (@responses) {
                 $message->reply($response);
@@ -250,21 +273,12 @@ __PACKAGE__->meta->make_immutable;
     use v5.10;
     use Moose;
 
-    extends 'Bot::Backbone::Dispatcher::Predicate';
-
-    has the_code => (
-        is          => 'ro',
-        isa         => 'CodeRef',
-        required    => 1,
-        traits      => [ 'Code' ],
-        handles     => {
-            'call_the_code' => 'execute',
-        },
-    );
+    extends 'Bot::Backbone::Dispatcher::Predicate::Functor';
 
     sub do_it {
         my ($self, $service, $message) = @_;
-        return $self->call_the_code($service, $message);
+        my $invocant = $self->select_invocant($service);
+        return $self->call_the_code($invocant, $message);
     }
 
     __PACKAGE__->meta->make_immutable;

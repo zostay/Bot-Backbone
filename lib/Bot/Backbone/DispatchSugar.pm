@@ -35,7 +35,7 @@ sub redispatch_to($) {
 
     $dispatcher->add_predicate_or_return(
         Bot::Backbone::Dispatcher::Predicate::RedispatchTo->new(
-            name => $name,
+            name            => $name,
         )
     );
 }
@@ -52,8 +52,8 @@ sub command($$) {
 
     $dispatcher->add_predicate_or_return(
         Bot::Backbone::Dispatcher::Predicate::Command->new(
-            match          => $match,
-            next_predicate => $predicate,
+            match           => $match,
+            next_predicate  => $predicate,
         )
     );
 }
@@ -64,7 +64,7 @@ sub not_command($) {
 
     $dispatcher->add_predicate_or_return(
         Bot::Backbone::Dispatcher::Predicate::NotCommand->new(
-            next_predicate => $predicate,
+            next_predicate  => $predicate,
         )
     );
 }
@@ -75,7 +75,7 @@ sub to_me($) {
 
     $dispatcher->add_predicate_or_return(
         Bot::Backbone::Dispatcher::Predicate::ToMe->new(
-            next_predicate => $predicate,
+            next_predicate  => $predicate,
         )
     );
 }
@@ -86,8 +86,8 @@ sub not_to_me($) {
 
     $dispatcher->add_predicate_or_return(
         Bot::Backbone::Dispatcher::Predicate::ToMe->new(
-            negate         => 1,
-            next_predicate => $predicate,
+            negate          => 1,
+            next_predicate  => $predicate,
         )
     );
 }
@@ -105,8 +105,8 @@ sub given_parameters(&$) {
 
     $dispatcher->add_predicate_or_return(
         Bot::Backbone::Dispatcher::Predicate::GivenParameters->new(
-            parameters     => \@args,
-            next_predicate => $predicate,
+            parameters      => \@args,
+            next_predicate  => $predicate,
         )
     );
 }
@@ -127,7 +127,8 @@ sub _respond {
 
     $dispatcher->add_predicate_or_return(
         Bot::Backbone::Dispatcher::Predicate::Respond->new(
-            responder => $code,
+            dispatcher_type => $meta,
+            responder       => $code,
         )
     );
 }
@@ -143,7 +144,8 @@ sub _run_this {
 
     $dispatcher->add_predicate_or_return(
         Bot::Backbone::Dispatcher::Predicate::Run->new(
-            the_code => $code,
+            dispatcher_type => $meta,
+            the_code        => $code,
         )
     );
 }
@@ -160,14 +162,14 @@ sub _by_method {
         unless defined $meta->find_method_by_name($name);
 
     return sub {
-        my ($service, $message) = @_;
+        my ($self, $message) = @_;
 
-        my $method = $service->can($name);
+        my $method = $self->can($name);
         if (defined $method) {
-            return $service->$method($message);
+            return $self->$method($message);
         }
         else {
-            Carp::croak("no such method as $name found on ", $service->meta->name);
+            Carp::croak("no such method as $name found on ", $self->meta->name);
         }
     };
 }

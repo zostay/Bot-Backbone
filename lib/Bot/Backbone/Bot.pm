@@ -66,6 +66,14 @@ has services => (
 
 =head1 METHODS
 
+=head2 bot
+
+Returns itself.
+
+=cut
+
+sub bot { $_[0] }
+
 =head2 construct_services
 
   $bot->construct_services;

@@ -5,6 +5,7 @@ use Moose;
 use List::MoreUtils qw( all );
 use MooseX::Types::Moose qw( ArrayRef ClassName CodeRef HashRef Object );
 use MooseX::Types -declare => [ qw(
+    DispatcherType
     EventLoop
     PredicateList
     ServiceList
@@ -21,6 +22,25 @@ This is a container for the various types used by L<Bot::Backbone>. It is built
 using L<MooseX::Types>.
 
 =head1 TYPES
+
+=head2 DispatcherType
+
+This is an enum with the following values:
+
+    bot
+    service
+
+=cut
+
+class_type 'Moose::Meta::Class';
+enum DispatcherType, qw( bot service );
+coerce DispatcherType,
+    from 'Moose::Meta::Class',
+    via { 
+        if    ($_->name->isa('Bot::Backbone::Bot'))                     { 'bot' }
+        elsif ($_->name->does('Bot::Backbone::Service::Role::Service')) { 'service' }
+        else  { die "unknown meta object $_ in DispatherType coercion" }
+    };
 
 =head2 EventLoop
 

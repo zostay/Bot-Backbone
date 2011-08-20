@@ -33,6 +33,9 @@ has bot => (
     isa         => 'Bot::Backbone::Bot',
     required    => 1,
     weak_ref    => 1,
+    handles     => {
+        get_service => 'get_service',
+    },
 );
 
 =head1 REQUIRED METHODS
