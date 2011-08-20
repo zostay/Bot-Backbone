@@ -7,9 +7,6 @@ use Moose::Exporter;
 use Bot::Backbone::Meta::Class::Bot;
 use Bot::Backbone::Dispatcher;
 
-our $DEBUG = '';
-sub debug { warn @_, "\n" if $DEBUG }
-
 # ABSTRACT: Extensible framework for building bots
 
 =head1 SYNOPSIS
@@ -260,7 +257,6 @@ sub dispatcher($$) {
         $meta->no_longer_building_dispatcher;
     }
 
-    debug("add_dispatcher($name, ...)");
     $meta->add_dispatcher($name, $dispatcher);
 }
 

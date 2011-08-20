@@ -188,4 +188,27 @@ sub run_this_method($) {
     _run_this($meta, \&$code);
 }
 
+# These are documented in Bot::Backbone and Bot::Backbone::Service
+
+
+=begin Pod::Coverage
+
+  also
+  as
+  command
+  given_parameters
+  not_command
+  not_to_me
+  parameter
+  redispatch_to
+  respond
+  respond_by_method
+  run_this
+  run_this_method
+  to_me
+
+=end Pod::Coverage
+
+=cut
+
 1;

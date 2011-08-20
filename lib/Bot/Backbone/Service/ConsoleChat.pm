@@ -145,7 +145,7 @@ sub got_console_input {
     $term->get($self->prompt);
 }
 
-=head2 cli_mesage
+=head2 cli_message
 
 Handles most messages typed on the command line.
 
