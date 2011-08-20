@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.112320  2011-08-19 23:17:37 America/Chicago
+
 	* Moose-based tools for building chat bot dispatchers and organizing chat
 	  bot services.
 	* Moose-based tools for building chat services, which are submodules
