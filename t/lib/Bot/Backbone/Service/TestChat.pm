@@ -8,6 +8,7 @@ with qw(
     Bot::Backbone::Service::Role::Chat
 );
 
+use Bot::Backbone::Identity;
 use Bot::Backbone::Message;
 
 has mq => (
@@ -24,27 +25,34 @@ has mq => (
 sub initialize { }
 
 sub dispatch {
-    my ($self, $text) = @_;
+    my ($self, %params) = @_;
+
+    my %defaults = (
+        from => {
+            username => 'test',
+            nickname => 'Test',
+            me       => '',
+        },
+        to => {
+            username => 'testbot',
+            nickname => 'Test Bot',
+            me       => 1,
+        },
+        group => undef,
+    );
+
+    my %merged = (%defaults, %params);
 
     my $message = Bot::Backbone::Message->new({
         chat  => $self,
-        from  => Bot::Bakcbone::Identity->new(
-            username => 'test',
-            nickname => 'Test',
-        ),
-        to    => Bot::Backbone::Identity->new(
-            username => 'testbot',
-            nickname => 'Test Bot',
-        ),
-        group => undef,
-        text  => $text,
+        from  => Bot::Backbone::Identity->new($merged{from}),
+        to    => Bot::Backbone::Identity->new($merged{to}),
+        group => $merged{group},
+        text  => $merged{text},
     });
 
     $self->resend_message($message);
-
-    if ($self->has_dispatcher) {
-        $self->dispatch_message($message);
-    }
+    $self->dispatch_message($message);
 }
 
 sub send_reply {
