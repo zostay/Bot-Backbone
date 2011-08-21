@@ -128,7 +128,7 @@ sub _respond {
     $dispatcher->add_predicate_or_return(
         Bot::Backbone::Dispatcher::Predicate::Respond->new(
             dispatcher_type => $meta,
-            responder       => $code,
+            the_code        => $code,
         )
     );
 }
