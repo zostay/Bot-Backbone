@@ -28,6 +28,7 @@ use Bot::Backbone::Dispatcher;
 
   service group_foo => (
       service    => 'GroupChat',
+      group      => 'foo',
       chat       => 'chat_bot',
       dispatcher => 'group_chat', # defined below
   );
