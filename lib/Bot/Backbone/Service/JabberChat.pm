@@ -5,7 +5,7 @@ use Moose;
 with qw(
     Bot::Backbone::Service::Role::Service
     Bot::Backbone::Service::Role::Dispatch
-    Bot::Backbone::Service::Role::Chat
+    Bot::Backbone::Service::Role::BareMetalChat
     Bot::Backbone::Service::Role::GroupJoiner
 );
 
@@ -503,7 +503,7 @@ message.
 =cut
 
 sub send_reply {
-    my ($self, $message, $text) = @_;
+    my ($self, $message, $options) = @_;
 
     $self->send_message(
         group => $message->group,
@@ -535,6 +535,8 @@ sub send_message {
     else {
         $contact = $self->xmpp_contact($to);
     }
+
+    return unless $self->allow_send(\%params);
 
     $contact->make_message(body => $text)->send;
 }

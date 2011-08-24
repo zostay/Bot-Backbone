@@ -203,6 +203,43 @@ sub init_meta {
 
 =head1 SETUP ROUTINES
 
+=head2 send_policy
+
+  send_policy $name => ( ... );
+
+Add a new send policy configuration.
+
+=cut
+
+sub _resolve_class_name {
+    my ($meta, $section, $class_name) = @_;
+
+    if ($class_name =~ s/^\.//) {
+        $class_name = join '::', $meta->name, $section, $class_name;
+    }
+    elsif ($class_name =~ s/^=//) {
+        # do nothing, we now have the exact name
+    }
+    else {
+        $class_name = join '::', 'Bot::Backbone', $section, $class_name;
+    }
+
+    Class::MOP::load_class($class_name);
+    return $class_name;
+}
+
+sub send_policy($%) {
+    my ($meta, $name, %config) = @_;
+
+    my %final_config;
+    while (my ($class_name, $policy_config) = each %config) {
+        $class_name = _resolve_class_name($meta, 'SendPolicy', $class_name);
+        $final_config{$class_name} = $policy_config;
+    }
+
+    $meta->add_send_policy($name, \%final_config);
+}
+
 =head2 service
 
   service $name => ( ... );
@@ -214,18 +251,7 @@ Add a new service configuration.
 sub service($%) {
     my ($meta, $name, %config) = @_;
 
-    my $class_name = $config{service};
-    if ($class_name =~ s/^\.//) {
-        $class_name = join '::', $meta->name, 'Service', $class_name;
-    }
-    elsif ($class_name =~ s/^=//) {
-        # do nothing, we now have the exact name
-    }
-    else {
-        $class_name = join '::', 'Bot::Backbone::Service', $class_name;
-    }
-
-    Class::MOP::load_class($class_name);
+    my $class_name = _resolve_class_name($meta, 'Service', $config{service});
     $config{service} = $class_name;
 
     $meta->add_service($name, \%config);

@@ -5,7 +5,7 @@ use Moose;
 with qw(
     Bot::Backbone::Service::Role::Service
     Bot::Backbone::Service::Role::Dispatch
-    Bot::Backbone::Service::Role::Chat
+    Bot::Backbone::Service::Role::BareMetalChat
 );
 
 use Bot::Backbone::Identity;
