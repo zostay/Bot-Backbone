@@ -47,10 +47,16 @@ has chat => (
     init_arg    => undef,
     lazy_build  => 1,
     weak_ref    => 1,
+    handles     => {
+        'send_message' => 'send_message',
+        'send_reply'   => 'send_reply',
+    },
 
     # lazy_build implies (predicate => has_chat)
     predicate   => 'has_setup_the_chat',
 );
+
+with 'Bot::Backbone::Service::Role::SendPolicy';
 
 sub _build_chat {
     my $self = shift;
@@ -79,6 +85,12 @@ ignored.
 requires 'receive_message';
 
 =head1 METHODS
+
+=head2 send_message
+
+=head2 send_reply
+
+Be sure to use these versions of the methods. Otherwise any send policies you have set on this class will be ignored.
 
 =head2 initialize
 

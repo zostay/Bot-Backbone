@@ -2,6 +2,8 @@ package Bot::Backbone::Service::Role::Chat;
 use v5.10;
 use Moose::Role;
 
+with 'Bot::Backbone::Service::Role::SendPolicy';
+
 use Bot::Backbone::SendPolicy::Aggregate;
 
 # ABSTRACT: Chat services must implement this role
@@ -36,51 +38,6 @@ has chat_consumers => (
     },
 );
 
-=head2 send_policy_name
-
-This is the name of the send policy to apply to this service. It is set using
-the C<send_policy> setting in the service configuration. It will be used to set
-L</send_policy>, if any policy is set.
-
-=cut
-
-has send_policy_name => (
-    is          => 'ro',
-    isa         => 'Str',
-    init_arg    => 'send_policy',
-    predicate   => 'has_send_policy',
-);
-
-=head2 send_policy
-
-This is the L<Bot::Backbone::SendPolicy> that has been selected for this
-service. 
-
-=cut
-
-has send_policy => (
-    is          => 'ro',
-    does        => 'Bot::Backbone::SendPolicy',
-    init_arg    => undef,
-    lazy_build  => 1,
-
-    # lazy_build implies (predicate => has_send_policy)
-    predicate   => 'has_setup_the_send_policy',
-);
-
-sub _build_send_policy {
-    my $self = shift;
-    my $send_policy = $self->bot->meta->send_policies->{ $self->send_policy_name };
-
-    die "no such send policy as ", $self->send_policy_name, "\n"
-        unless defined $send_policy;
-
-    Bot::Backbone::SendPolicy::Aggregate->new(
-        bot    => $self->bot,
-        config => $send_policy,
-    );
-}
-
 =head1 REQUIRED METHODS
 
 =head2 send_message
@@ -110,52 +67,6 @@ A send policy may be explicitly provided by setting the C<send_policy> setting i
 =cut
 
 requires qw( send_message );
-
-around send_message => sub {
-    my ($next, $self, %params) = @_;
-
-    my $send_policy_result = $params{send_policy_result} // { allow => 1 };
-    my $send_policy        = $params{send_policy};
-
-    $send_policy_result->{after} //= 0;
-
-    _apply_send_policy($send_policy, $send_policy_result, \%params)
-        if defined $send_policy;
-
-    _apply_send_policy($self->send_policy, $send_policy_result, \%params)
-        if $self->has_send_policy;
-
-    return unless $send_policy_result->{allow};
-
-    # If this is a bare metal chat... then apply any required delay
-    if (($send_policy_result->{after} // 0) > 0 
-            and $self->does('Bot::Backbone::Service::Role::BareMetalChat')) {
-
-        # Setting Timer
-        my $w = AnyEvent->timer(
-            after => $send_policy_result->{after},
-            cb    => sub { $self->$next(%params) },
-        );
-
-        $self->_enqueue_message($w);
-
-        return;
-    }
-
-    # Allowed and no delays... so GO!
-    $self->$next(%params);
-};
-
-sub _apply_send_policy {
-    my ($send_policy, $send_policy_result, $options) = @_;
-
-    my $new_result = $send_policy->allow_send($options);
-
-    $send_policy_result->{allow} &&= $new_result->{allow};
-
-    $send_policy_result->{after} = $new_result->{after}
-        if ($new_result->{after} // 0) > $send_policy_result->{after};
-}
 
 =head1 METHODS
 
