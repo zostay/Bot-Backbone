@@ -196,17 +196,6 @@ sub initialize {
     );
 }
 
-=head2 send_reply
-
-Whenever the bot replies to a message, the reply will be posted to console.
-
-=cut
-
-sub send_reply {
-    my ($self, $message, $text) = @_;
-    $self->term->put($text);
-}
-
 =head2 send_message
 
 Whenever the bot sends a message, it will be displayed if it is a direct message

@@ -33,17 +33,6 @@ Does nothing.
 
 sub initialize { }
 
-=head2 send_reply
-
-Forwards the direct message reply on to the nested chat service.
-
-=cut
-
-sub send_reply {
-    my ($self, $message, $text) = @_;
-    $self->chat->send_reply($message, $text);
-}
-
 =head2 send_message
 
 Sends a direct message chat to the nested chat service.

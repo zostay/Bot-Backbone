@@ -56,17 +56,6 @@ sub initialize {
     $self->chat->join_group($self->group);
 }
 
-=head2 send_reply
-
-Replies to L</group> chats that were forwarded on.
-
-=cut
-
-sub send_reply {
-    my ($self, $message, $text) = @_;
-    $self->chat->send_reply($message, $text);
-}
-
 =head2 send_message
 
 Sends a message to the L</group>.

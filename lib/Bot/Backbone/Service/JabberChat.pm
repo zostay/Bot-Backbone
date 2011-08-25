@@ -495,23 +495,6 @@ sub got_group_message {
     $self->dispatch_message($message);
 }
 
-=head2 send_reply
-
-Sends a message back to the same user or group that originated the given
-message.
-
-=cut
-
-sub send_reply {
-    my ($self, $message, $options) = @_;
-
-    $self->send_message(
-        group => $message->group,
-        to    => $message->from->username,
-        text  => $text,
-    );
-}
-
 =head2 send_message
 
 Sends a message to the Jabber server for a direct chat or group.
