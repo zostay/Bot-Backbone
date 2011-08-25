@@ -12,4 +12,26 @@ This role is nearly identical to L<Bot::Backbone::Service::Role::Chat>, but is u
 
 =cut
 
+has _message_queue => (
+    is          => 'rw',
+    isa         => 'ArrayRef',
+    required    => 1,
+    default     => sub { [] },
+    traits      => [ 'Array' ],
+    handles     => {
+        '_enqueue_message'     => 'push',
+        #'_empty_message_queue' => [ map => sub { undef $_ } ],
+        '_empty_message_queue' => 'clear',
+    },
+);
+
+after shutdown => sub {
+    my $self = shift;
+    for my $timer (@{ $self->_message_queue }) {
+        undef $timer;
+    }
+    $self->_message_queue([]);
+    #$self->_empty_message_queue;
+};
+
 1;

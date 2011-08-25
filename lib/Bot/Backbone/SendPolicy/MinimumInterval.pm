@@ -72,7 +72,7 @@ This will be set each time the policy encounters a message. If L</discard> is fa
 =cut
 
 has last_send_time => (
-    is          => 'ro',
+    is          => 'rw',
     isa         => 'Num',
     predicate   => 'has_last_send_time',
 );
@@ -104,27 +104,29 @@ sub allow_send {
 
     my %send = ( allow => 1 );
     my $now = AnyEvent->now;
-    my $after;
+    my $too_soon = $self->_too_soon;
 
-    if (my $after = $self->_too_soon) {
+    my $save = 1;
+    if ($too_soon) {
 
         # Messages coming too fast should be thrown away
         if ($self->discard) {
+            $save = 0;
             $send{allow} = 0;
         }
 
         # Messages coming too fast should be postponed 
         else {
-            $send{after} = $after - $now;
+            $send{after} = $too_soon - $now;
 
             # If the number of messages queued is too long, nevermind...
             $send{allow} = 0
                 if $self->has_queue 
-               and $after / $self->interval > $self->queue_length;
+               and $send{after} / $self->interval > $self->queue_length;
         }
     }
 
-    $self->last_send_time($after);
+    $self->last_send_time($too_soon || $now) if $save;
     return \%send;
 }
 

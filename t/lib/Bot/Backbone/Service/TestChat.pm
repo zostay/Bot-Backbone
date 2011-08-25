@@ -18,7 +18,8 @@ has mq => (
     default     => sub { [] },
     traits      => [ 'Array' ],
     handles     => {
-        'put' => 'push',
+        'put'      => 'push',
+        'mq_count' => 'count',
     },
 );
 
@@ -55,22 +56,12 @@ sub dispatch {
     $self->dispatch_message($message);
 }
 
-sub send_reply {
-    my ($self, $message, $text) = @_;
-
-    $self->put({
-        action  => 'send_reply',
-        message => $message,
-        text    => $text,
-    });
-}
-
 sub send_message {
     my ($self, %params) = @_;
 
     $self->put({
         %params,
-        action => 'send_message',
+        time => time,
     });
 }
 

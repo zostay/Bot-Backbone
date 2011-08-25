@@ -187,7 +187,7 @@ to be defined as needed.
 =cut
 
 Moose::Exporter->setup_import_methods(
-    with_meta => [ qw( dispatcher service ) ],
+    with_meta => [ qw( dispatcher service send_policy ) ],
     also      => [ qw( Moose Bot::Backbone::DispatchSugar ) ],
 );
 
@@ -233,15 +233,15 @@ sub _resolve_class_name {
 }
 
 sub send_policy($%) {
-    my ($meta, $name, %config) = @_;
+    my ($meta, $name, @config) = @_;
 
-    my %final_config;
-    while (my ($class_name, $policy_config) = each %config) {
+    my @final_config;
+    while (my ($class_name, $policy_config) = splice @config, 0, 2) {
         $class_name = _resolve_class_name($meta, 'SendPolicy', $class_name);
-        $final_config{$class_name} = $policy_config;
+        push @final_config, [ $class_name, $policy_config ];
     }
 
-    $meta->add_send_policy($name, \%final_config);
+    $meta->add_send_policy($name, \@final_config);
 }
 
 =head2 service
