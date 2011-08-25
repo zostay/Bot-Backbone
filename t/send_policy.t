@@ -6,7 +6,7 @@ use lib 't/lib';
 #use AnyEvent;
 use POE;
 use Scalar::Util qw( weaken );
-use Test::More tests => 10;
+use Test::More tests => 16;
 
 {
     package TestBot;
@@ -22,6 +22,13 @@ use Test::More tests => 10;
         MinimumInterval => { interval => 1, discard => 1 },
     );
 
+    send_policy dont_repeat_for_1_second => (
+        MinimumRepeatInterval => { 
+            interval => 1,
+            discard  => 1,
+        },
+    );
+
     service chat1 => (
         service     => 'TestChat',
         send_policy => 'use_1_second_interval',
@@ -32,6 +39,11 @@ use Test::More tests => 10;
         send_policy => 'use_1_second_interval_but_discard',
     );
 
+    service chat3 => (
+        service     => 'TestChat',
+        send_policy => 'dont_repeat_for_1_second',
+    );
+
 }
 
 my $bot = TestBot->new;
@@ -40,6 +52,7 @@ $bot->construct_services;
 # For reference during testing below
 my $chat1 = $bot->get_service('chat1');
 my $chat2 = $bot->get_service('chat2');
+my $chat3 = $bot->get_service('chat3');
 
 # TODO Figure out what incantation is required to get this version of the
 # test run to work.
@@ -78,8 +91,10 @@ POE::Session->create(
             state $counter = 0;
 
             if (++$counter < 300) {
+                my $ticktock = $counter % 2 ? 'tick' : 'tock';
                 $bot->get_service('chat1')->send_message(text => $counter);
                 $bot->get_service('chat2')->send_message(text => $counter);
+                $bot->get_service('chat3')->send_message(text => $ticktock);
 
                 $_[KERNEL]->delay(send_test_chat => 0.01);
             }
@@ -106,10 +121,18 @@ for my $i (0 .. 3) {
 
 # Test chat2 with 1 seonc intervals, with extras discarded
 cmp_ok($chat2->mq_count, '>=', 2, 'at least 2 messages sent');
-cmp_ok($chat2->mq_count, '<=', 4, 'no more than 3 shoudl be sent');
+cmp_ok($chat2->mq_count, '<=', 4, 'no more than 3 should be sent');
 
 for my $i (0 .. 1) {
     cmp_ok($chat2->mq->[$i]->{text}, '<', $chat2->mq->[$i+1]->{text} - 50, 
         "messages $i and $i + 1 should not be contiguous");
 }
 
+# Test chat3 with no repeats for 1 second
+cmp_ok($chat3->mq_count, '>=', 4, 'at least 4 messages sent');
+cmp_ok($chat3->mq_count, '<=', 8, 'no more than 8 should be sent');
+
+is($chat3->mq->[0]->{text}, 'tick', '0 is tick');
+is($chat3->mq->[1]->{text}, 'tock', '1 is tock');
+is($chat3->mq->[2]->{text}, 'tick', '2 is tick');
+is($chat3->mq->[3]->{text}, 'tock', '3 is tock');

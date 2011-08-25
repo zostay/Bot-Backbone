@@ -157,7 +157,7 @@ sub allow_send {
 
     my %send = ( allow => 1 );
     my $now = AnyEvent->now;
-    my $key = $self->cache_key($options);
+    my $key = $self->get_cache_key($options);
     my $save = 1;
     my $after = 0;
     my ($last_send, $orig_send) = ($now, $now);
@@ -185,7 +185,7 @@ sub allow_send {
 
                 # The lingering interval has not been passed, so move the last
                 # send date forward
-                if ($now - $orig_send < $self->lingering_interval)) {
+                if ($now - $orig_send < $self->lingering_interval) {
                     $last_send = $now + $after;
                 }
 
