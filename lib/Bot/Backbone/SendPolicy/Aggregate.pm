@@ -53,7 +53,7 @@ sub _build_policies {
     my @policies;
     for my $config_pair ($self->config_pairs) {
         my ($class_name, $policy_config) = @$config_pair;
-        push @policies, $class_name->new(%$policy_config);
+        push @policies, $class_name->new(%$policy_config, bot => $self->bot);
     }
 
     return \@policies;

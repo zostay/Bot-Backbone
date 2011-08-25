@@ -73,6 +73,21 @@ See L<Bot::Backbone::SendPolicy::MinimumInterval> and L<Bot::Backbone::SendPolic
 
 The rest of this docuemntation describes how to build a send policy implementation.
 
+=head1 ATTRIBUTES
+
+=head2 bot
+
+This is a back reference to the bot.
+
+=cut
+
+has bot => (
+    is          => 'ro',
+    isa         => 'Bot::Backbone::Bot',
+    required    => 1,
+    weak_ref    => 1,
+);
+
 =head1 REQUIRED METHODS
 
 =head2 allow_send

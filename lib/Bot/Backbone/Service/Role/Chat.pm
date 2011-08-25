@@ -75,7 +75,10 @@ sub _build_send_policy {
     die "no such send policy as ", $self->send_policy_name, "\n"
         unless defined $send_policy;
 
-    Bot::Backbone::SendPolicy::Aggregate->new(config => $send_policy);
+    Bot::Backbone::SendPolicy::Aggregate->new(
+        bot    => $self->bot,
+        config => $send_policy,
+    );
 }
 
 =head1 REQUIRED METHODS
