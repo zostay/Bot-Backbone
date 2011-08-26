@@ -2,6 +2,8 @@ package Bot::Backbone::Service::Role::ChatConsumer;
 use v5.10;
 use Moose::Role;
 
+with 'Bot::Backbone::Service::Role::SendPolicy';
+
 # ABSTRACT: Role for services that listen for chat messages
 
 =head1 DESCRIPTION
@@ -47,16 +49,15 @@ has chat => (
     init_arg    => undef,
     lazy_build  => 1,
     weak_ref    => 1,
-    handles     => {
-        'send_message' => 'send_message',
-        'send_reply'   => 'send_reply',
-    },
 
     # lazy_build implies (predicate => has_chat)
     predicate   => 'has_setup_the_chat',
 );
 
-with 'Bot::Backbone::Service::Role::SendPolicy';
+# XXX Don't delegate these two. Delegation and -excludes don't seem to
+# cooperate very well.
+sub send_message { shift->chat->send_message(@_) }
+sub send_reply   { shift->chat->send_reply(@_) }
 
 sub _build_chat {
     my $self = shift;

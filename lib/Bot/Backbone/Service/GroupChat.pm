@@ -6,8 +6,11 @@ with qw(
     Bot::Backbone::Service::Role::Service
     Bot::Backbone::Service::Role::Dispatch
     Bot::Backbone::Service::Role::Chat
-    Bot::Backbone::Service::Role::ChatConsumer
 );
+
+with 'Bot::Backbone::Service::Role::ChatConsumer' => {
+    -excludes => [ 'send_message' ],
+};
 
 with_bot_roles qw(
     Bot::Backbone::Bot::Role::GroupChat
