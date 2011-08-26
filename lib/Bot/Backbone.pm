@@ -4,10 +4,6 @@ use Moose();
 use Bot::Backbone::DispatchSugar();
 use Moose::Exporter;
 
-use AnyEvent ();
-use AnyEvent::Impl::POE ();
-use POE qw( Loop::EV );
-
 use Bot::Backbone::Meta::Class::Bot;
 use Bot::Backbone::Dispatcher;
 
