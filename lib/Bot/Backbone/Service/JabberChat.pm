@@ -519,7 +519,10 @@ sub send_message {
         $contact = $self->xmpp_contact($to);
     }
 
-    return unless $self->allow_send(\%params);
+    unless (defined $contact) {
+        Carp::carp("JabberChat: no contact found for $to/$group to send $text\n");
+        return;
+    }
 
     $contact->make_message(body => $text)->send;
 }
