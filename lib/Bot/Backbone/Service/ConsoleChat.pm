@@ -42,6 +42,10 @@ has term => (
     required    => 1,
     lazy_build  => 1,
     clearer     => 'clear_term',
+    handles     => {
+        'put_line' => 'put',
+        'get_line' => 'get',
+    },
 );
 
 sub _build_term { 
