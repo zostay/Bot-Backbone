@@ -60,15 +60,16 @@ sub send_message {
 
 =head2 receive_message
 
-If the message is direct, it will be passed on to any chat consumers and
-dispatched.
+If the message is not to a group and is sent direct, it will be passed on to
+any chat consumers and dispatched.
 
 =cut
 
 sub receive_message {
     my ($self, $message) = @_;
 
-    return unless $message->is_direct;
+    return unless not $message->is_group
+                  and $message->is_direct;
 
     $self->resend_message($message);
     $self->dispatch_message($message);
