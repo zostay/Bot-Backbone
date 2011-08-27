@@ -403,6 +403,8 @@ message on the associated chat consumers and the dispatcher.
 sub got_direct_message {
     my ($self, $client, $account, $xmpp_message) = @_;
 
+    return unless defined $xmpp_message->body;
+
     my $to_contact   = $self->xmpp_contact($xmpp_message->to);
     my $from_contact = $self->xmpp_contact($xmpp_message->from);
 
