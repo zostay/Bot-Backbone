@@ -5,9 +5,12 @@ use Moose;
 with qw(
     Bot::Backbone::Service::Role::Service
     Bot::Backbone::Service::Role::Dispatch
-    Bot::Backbone::Service::Role::Chat
     Bot::Backbone::Service::Role::ChatConsumer
 );
+
+with 'Bot::Backbone::Service::Role::Chat' => {
+    -excludes => [ qw( send_message ) ],
+};
 
 # ABSTRACT: A helper for doing direct chats
 
