@@ -1,5 +1,28 @@
 {{$NEXT}}
 
+    * There's a new extensible send policy framework for helping authors build
+      bots that are prevented from doing really annoying things like being too
+      chatty, repeating themselves too often, etc.
+    * Send policies will be applied in all cases to chats and chat consumers
+      automatically. They are not yet applied to dispatched services.
+    * A new send_policy sugar method is available via Bot::Backbone to configure
+      send policies.
+    * Two send policy models are provided: (1) MinimumInterval to prevent
+      general flooding and (2) MinimumRepeatInterval to prevent the bot from
+      repeating itself.
+    * ConsoleChat now has get_line and put_line methods to allow easier
+      interaction with the terminal.
+    * Bugfix: The respond sugar subroutine was completely unusable.
+    * Bugfix: Previously, JabberChat would fail if a message was sent through it
+      before the session was completely ready. Now a warning is issued instead.
+    * Bugfix: JabberChat is no longer XMPP spewing debug output to STDOUT.
+    * Bugfix: Group chats that start with the bots nick were being incorrectly
+      picked up by the DirectChat service.
+    * Bugfix: Sometimes Jabber servers send messages with no message.
+      AnyEvent::XMPP passes these on for some reason. We ignore them now because
+      they were causing the Bot::Backbone::Message constructor to craok.
+    * Bugfix: A few documentation tweaks and other small fixes.
+
 0.112320  2011-08-19 23:17:37 America/Chicago
 
 	* Moose-based tools for building chat bot dispatchers and organizing chat
