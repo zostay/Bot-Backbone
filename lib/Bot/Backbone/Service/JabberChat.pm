@@ -148,7 +148,7 @@ has xmpp_client => (
     lazy_build  => 1,
 );
 
-sub _build_xmpp_client { AnyEvent::XMPP::Client->new( debug => 1 ) }
+sub _build_xmpp_client { AnyEvent::XMPP::Client->new }
 
 =head2 xmpp_disco
 
