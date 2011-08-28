@@ -11,12 +11,12 @@ A sender is a service that provides C<send_message> and C<send_reply> methods.
 
 =head2 send_reply
 
-  $chat->send_reply($message, $text); # shortcut for { text => $text }
   $chat->send_reply($message, \%options);
 
-This is often just a wrapper provided around C<send_message>.  The first argument is the original L<Bot::Backbone::Message> that this is in reply to. 
+This is often just a wrapper provided around C<send_message>.  The first
+argument is the original L<Bot::Backbone::Message> that this is in reply to. 
 
-The second argument is the text to send or options to modify the mesage being sent.
+The second argument is the options to describe the reply being sent.
 
 =head2 send_message
 
