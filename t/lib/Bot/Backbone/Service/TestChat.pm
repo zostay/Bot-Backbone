@@ -57,10 +57,10 @@ sub dispatch {
 }
 
 sub send_message {
-    my ($self, %params) = @_;
+    my ($self, $params) = @_;
 
     $self->put({
-        %params,
+        %$params,
         time => time,
     });
 }

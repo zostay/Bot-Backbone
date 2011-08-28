@@ -41,13 +41,13 @@ POE::Session->create(
         },
         tick => sub {
             if ($bot->has_service('tick_chat')) {
-                $bot->get_service('tick_chat')->send_message(text => 'tick');
+                $bot->get_service('tick_chat')->send_message({ text => 'tick' });
                 $_[KERNEL]->delay(tock => 1);
             }
         },
         tock => sub {
             if ($bot->has_service('tick_chat')) {
-                $bot->get_service('tick_chat')->send_message(text => 'tock');
+                $bot->get_service('tick_chat')->send_message({ text => 'tock' });
                 $_[KERNEL]->delay(tick => 1);
             }
         },

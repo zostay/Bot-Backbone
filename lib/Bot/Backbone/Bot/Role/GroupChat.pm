@@ -27,7 +27,7 @@ use namespace::autoclean;
   for my $name ($bot->list_group_names) { say " * $name" }
 
   my $chat = $bot->find_group('foo');
-  $chat->send_message(text => 'just to group foo');
+  $chat->send_message({ text => 'just to group foo' });
 
 =head1 DESCRIPTION
 

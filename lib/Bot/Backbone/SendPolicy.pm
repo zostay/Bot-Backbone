@@ -63,15 +63,25 @@ use Moose::Role;
 
 =head1 DESCRIPTION
 
-Bots are fun and all, but they can easily become annoying. These controls for preventing a bot from sending too often or repeating itself too frequently can help to minimize that annoyance.
+Bots are fun and all, but they can easily become annoying. These controls for
+preventing a bot from sending too often or repeating itself too frequently can
+help to minimize that annoyance.
 
-The purpose of the send policy framework is to allow the bot maintainer to set policies against any service that may call C<send_message>. The policy set against that service may delay any message being sent, cause a message to be discarded, or alter the message.
+The purpose of the send policy framework is to allow the bot maintainer to set
+policies against any service that may call C<send_message>. The policy set
+against that service may delay any message being sent, cause a message to be
+discarded, or alter the message.
 
-The framework is designed to be extensible with a couple very useful policies being provided with the backbone framework.
+The framework is designed to be extensible with a couple very useful policies
+being provided with the backbone framework.
 
-See L<Bot::Backbone::SendPolicy::MinimumInterval> and L<Bot::Backbone::SendPolicy::MinimumRepeatInterval>. See L<Bot::Backbone> and L<Bot::Backbone::Service> for more information on how send policies are defined and applied.
+See L<Bot::Backbone::SendPolicy::MinimumInterval> and
+L<Bot::Backbone::SendPolicy::MinimumRepeatInterval>. See L<Bot::Backbone> and
+L<Bot::Backbone::Service> for more information on how send policies are defined
+and applied.
 
-The rest of this docuemntation describes how to build a send policy implementation.
+The rest of this docuemntation describes how to build a send policy
+implementation.
 
 =head1 ATTRIBUTES
 
@@ -97,7 +107,10 @@ has bot => (
       ...
   });
 
-Given a set of options passed to the C<send_message> method of L<Bot::Backbone::Service::Role::Chat>, return a hash reference containing the instrucitons on what to do with that message. The C<allow_send> method may also modify the passed in options to alter the message being posted.
+Given a set of options passed to the C<send_message> method of
+L<Bot::Backbone::Service::Role::Chat>, return a hash reference containing the
+instrucitons on what to do with that message. The C<allow_send> method may also
+modify the passed in options to alter the message being posted.
 
 The result may contain the following keys:
 
@@ -105,13 +118,16 @@ The result may contain the following keys:
 
 =item allow
 
-This is a boolean value. If true, the message will be delivered to the chat. If it is false, the message is immediately discarded.
+This is a boolean value. If true, the message will be delivered to the chat. If
+it is false, the message is immediately discarded.
 
 This must be set. If not set, an exception will be thrown.
 
 =item after
 
-This is a numeric value that contains a number of fractional sections to wait utnil the message should be delivered. The message will be put on hold and then delivered after that amount of wait time has passed.
+This is a numeric value that contains a number of fractional sections to wait
+utnil the message should be delivered. The message will be put on hold and then
+delivered after that amount of wait time has passed.
 
 =back
 

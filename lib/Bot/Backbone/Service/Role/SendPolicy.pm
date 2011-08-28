@@ -21,20 +21,26 @@ with 'Bot::Backbone::Service::Role::Sender';
 
   # Post to a random chat
   sub send_message {
-      my ($self, %params) = @_;
+      my ($self, $params) = @_;
 
       my @chats = grep { $_->does('Bot::Backbone::Service::Role::Chat') } 
                          $self->bot->list_services;
 
       my ($chat) = shuffle @chats;
-      $chat->send_message(\%params);
+      $chat->send_message($params);
   }
 
   # ... whatever else this insane service does ...
 
 =head1 DESCRIPTION
 
-This role is used to apply send policies to L<Bot::Backbone::Service::Role::Chat>, L<Bot::Backbone::Service::Role::ChatConsumer>, and L<Bot::Backbone::Service::Role::Dispatch> services. If you have a service that is none of those, but would like to have a send policy applied to anything it may send to a chat, you may define a C<send_message> method and then apply this role.
+This role is used to apply send policies to
+L<Bot::Backbone::Service::Role::Chat>,
+L<Bot::Backbone::Service::Role::ChatConsumer>, and
+L<Bot::Backbone::Service::Role::Dispatch> services. If you have a service that
+is none of those, but would like to have a send policy applied to anything it
+may send to a chat, you may define a C<send_message> method and then apply this
+role.
 
 =head1 ATTRIBUTES
 
@@ -87,22 +93,26 @@ sub _build_send_policy {
 
 =head2 send_message
 
-This role requires a C<send_mesage> method be present that works just the same as the one required in L<Bot::Backbone::Service::Role::Chat>. This role will modify that method to apply the L</send_policy> to calls to that method.
+This role requires a C<send_mesage> method be present that works just the same
+as the one required in L<Bot::Backbone::Service::Role::Chat>. This role will
+modify that method to apply the L</send_policy> to calls to that method.
 
 =cut
 
-around send_message => sub {
-    my ($next, $self, %params) = @_;
+requires qw( send_message );
 
-    my $send_policy_result = $params{send_policy_result} // { allow => 1 };
-    my $send_policy        = $params{send_policy};
+around send_message => sub {
+    my ($next, $self, $params) = @_;
+
+    my $send_policy_result = $params->{send_policy_result} // { allow => 1 };
+    my $send_policy        = $params->{send_policy};
 
     $send_policy_result->{after} //= 0;
 
-    _apply_send_policy($send_policy, $send_policy_result, \%params)
+    _apply_send_policy($send_policy, $send_policy_result, $params)
         if defined $send_policy;
 
-    _apply_send_policy($self->send_policy, $send_policy_result, \%params)
+    _apply_send_policy($self->send_policy, $send_policy_result, $params)
         if $self->has_send_policy;
 
     return unless $send_policy_result->{allow};
@@ -114,7 +124,7 @@ around send_message => sub {
         # Setting Timer
         my $w = AnyEvent->timer(
             after => $send_policy_result->{after},
-            cb    => sub { $self->$next(%params) },
+            cb    => sub { $self->$next($params) },
         );
 
         $self->_enqueue_message($w);
@@ -123,7 +133,7 @@ around send_message => sub {
     }
 
     # Allowed and no delays... so GO!
-    $self->$next(%params);
+    $self->$next($params);
 };
 
 sub _apply_send_policy {

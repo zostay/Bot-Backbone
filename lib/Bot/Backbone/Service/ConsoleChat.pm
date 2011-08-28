@@ -209,9 +209,9 @@ other messages will be muted.
 =cut
 
 sub send_message {
-    my ($self, %params) = @_;
+    my ($self, $params) = @_;
 
-    my $text = $params{text};
+    my $text = $params->{text};
     $self->term->put($text);
 }
 

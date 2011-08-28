@@ -66,12 +66,12 @@ Sends a message to the L</group>.
 =cut
 
 sub send_message {
-    my ($self, %params) = @_;
-    my $text = $params{text};
-    $self->chat->send_message(
+    my ($self, $params) = @_;
+    my $text = $params->{text};
+    $self->chat->send_message({
         group => $self->group,
         text  => $text,
-    );
+    });
 }
 
 =head2 receive_message

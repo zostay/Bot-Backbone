@@ -92,9 +92,9 @@ POE::Session->create(
 
             if (++$counter < 300) {
                 my $ticktock = $counter % 2 ? 'tick' : 'tock';
-                $bot->get_service('chat1')->send_message(text => $counter);
-                $bot->get_service('chat2')->send_message(text => $counter);
-                $bot->get_service('chat3')->send_message(text => $ticktock);
+                $bot->get_service('chat1')->send_message({ text => $counter });
+                $bot->get_service('chat2')->send_message({ text => $counter });
+                $bot->get_service('chat3')->send_message({ text => $ticktock });
 
                 $_[KERNEL]->delay(send_test_chat => 0.01);
             }

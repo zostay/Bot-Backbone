@@ -43,19 +43,19 @@ Sends a direct message chat to the nested chat service.
 =cut
 
 sub send_message {
-    my ($self, %params) = @_;
+    my ($self, $params) = @_;
 
-    my $to = $params{to} // Bot::Backbone::Identity->new(
-        username => $params{to_username},
-        (defined $params{to_nickname} ? (nickname => $params{to_nickname}) : ()),
+    my $to = $params->{to} // Bot::Backbone::Identity->new(
+        username => $params->{to_username},
+        (defined $params->{to_nickname} ? (nickname => $params->{to_nickname}) : ()),
     );
 
-    my $text = $params{text};
+    my $text = $params->{text};
 
-    $self->chat->send_message(
+    $self->chat->send_message({
         to   => $to,
         text => $text,
-    );
+    });
 }
 
 =head2 receive_message

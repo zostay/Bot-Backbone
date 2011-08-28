@@ -504,11 +504,11 @@ Sends a message to the Jabber server for a direct chat or group.
 =cut
 
 sub send_message {
-    my ($self, %params) = @_;
+    my ($self, $params) = @_;
 
-    my $to    = $params{to};
-    my $group = $params{group};
-    my $text  = $params{text};
+    my $to    = $params->{to};
+    my $group = $params->{group};
+    my $text  = $params->{text};
     my $contact;
 
     # Select a group to receive the message
