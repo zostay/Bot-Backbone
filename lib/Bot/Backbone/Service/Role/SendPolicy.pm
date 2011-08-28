@@ -2,6 +2,8 @@ package Bot::Backbone::Service::Role::SendPolicy;
 use v5.10;
 use Moose::Role;
 
+with 'Bot::Backbone::Service::Role::Sender';
+
 # ABSTRACT: Provides send policy framework to a service
 
 =head1 SYNOPSIS
@@ -88,8 +90,6 @@ sub _build_send_policy {
 This role requires a C<send_mesage> method be present that works just the same as the one required in L<Bot::Backbone::Service::Role::Chat>. This role will modify that method to apply the L</send_policy> to calls to that method.
 
 =cut
-
-requires qw( send_message );
 
 around send_message => sub {
     my ($next, $self, %params) = @_;

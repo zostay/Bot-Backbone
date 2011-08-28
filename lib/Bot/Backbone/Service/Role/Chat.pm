@@ -64,10 +64,6 @@ This role also provides a wrapper around your chat's implementation of C<send_me
 
 A send policy may be explicitly provided by setting the C<send_policy> setting in the parameters to a L<Bot::Backbone::SendPolicy> object. Missing this parameter will result in an error. The C<send_policy_result> may also be set to reflect the most restrictive send policy result encountered so far.
 
-=cut
-
-requires qw( send_message );
-
 =head1 METHODS
 
 =head2 send_reply

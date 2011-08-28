@@ -25,6 +25,9 @@ use Test::More tests => 11;
     sub initialize { 
         pass('initialized');
     }
+
+    sub send_message { die }
+    sub send_reply   { die }
 }
 
 {
@@ -57,6 +60,9 @@ use Test::More tests => 11;
 
         fail('ran too many times') if $_[0]->inc > 2;
     }
+
+    sub send_message { die }
+    sub send_reply   { die }
 }
 
 {

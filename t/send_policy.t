@@ -112,7 +112,7 @@ $bot->run;
 
 # Test chat1 with 1 second intervals
 cmp_ok($chat1->mq_count, '>=', 5, 'at least 5 messages sent by now');
-cmp_ok($chat1->mq_count, '<=', 7, 'no more than 7 should be sent');
+cmp_ok($chat1->mq_count, '<=', 8, 'no more than 8 should be sent');
 
 for my $i (0 .. 3) {
     is($chat1->mq->[$i]->{text}, $chat1->mq->[$i+1]->{text} - 1, 
@@ -121,7 +121,7 @@ for my $i (0 .. 3) {
 
 # Test chat2 with 1 seonc intervals, with extras discarded
 cmp_ok($chat2->mq_count, '>=', 2, 'at least 2 messages sent');
-cmp_ok($chat2->mq_count, '<=', 4, 'no more than 3 should be sent');
+cmp_ok($chat2->mq_count, '<=', 5, 'no more than 5 should be sent');
 
 for my $i (0 .. 1) {
     cmp_ok($chat2->mq->[$i]->{text}, '<', $chat2->mq->[$i+1]->{text} - 50, 
@@ -130,7 +130,7 @@ for my $i (0 .. 1) {
 
 # Test chat3 with no repeats for 1 second
 cmp_ok($chat3->mq_count, '>=', 4, 'at least 4 messages sent');
-cmp_ok($chat3->mq_count, '<=', 8, 'no more than 8 should be sent');
+cmp_ok($chat3->mq_count, '<=', 10, 'no more than 10 should be sent');
 
 is($chat3->mq->[0]->{text}, 'tick', '0 is tick');
 is($chat3->mq->[1]->{text}, 'tock', '1 is tock');

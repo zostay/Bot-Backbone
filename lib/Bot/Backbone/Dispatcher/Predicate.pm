@@ -256,7 +256,7 @@ __PACKAGE__->meta->make_immutable;
         my @responses = $self->call_the_code($invocant, $message);
         if (@responses) {
             for my $response (@responses) {
-                $message->reply($response);
+                $message->reply($invocant, $response);
             }
 
             return 1;

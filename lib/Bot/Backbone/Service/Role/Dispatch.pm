@@ -2,6 +2,8 @@ package Bot::Backbone::Service::Role::Dispatch;
 use v5.10;
 use Moose::Role;
 
+with 'Bot::Backbone::Service::Role::SendPolicy';
+
 use namespace::autoclean;
 
 # ABSTRACT: Role for services that can perform dispatch

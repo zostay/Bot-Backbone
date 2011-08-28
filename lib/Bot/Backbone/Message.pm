@@ -4,6 +4,7 @@ use Moose;
 
 use Bot::Backbone::Identity;
 use List::MoreUtils qw( all );
+use Scalar::Util qw( blessed );
 
 # ABSTRACT: Describes a message or response
 
@@ -467,16 +468,33 @@ sub match_next_original {
 
 =head2 reply
 
-  $message->reply('blah blah blah');
+  $message->reply($sender, 'blah blah blah');
 
 Sends a reply back to the entity sending the message or the group that sent it,
 using the chat service that created the message.
 
+The first argument must be a L<Bot::Backbone::Service::Role::Sender> or L<Bot::Backbone::Bot>, which should be the service or bot sending the reply. The send policy set for that sender will be applied. You may pass C<undef> or anything else as the sender, but a warning will be issued.
+
 =cut
 
 sub reply {
-    my ($self, $text) = @_;
-    $self->chat->send_reply($self, $text);
+    my ($self, $sender, $text) = @_;
+
+    if (defined $sender and blessed $sender 
+           and $sender->does('Bot::Backbone::Service::Role::Sender')) {
+
+        $sender->send_reply($self, $text);
+    }
+    elsif (defined $sender and blessed $sender 
+            and $sender->isa('Bot::Backbone::Bot')) {
+
+        # No warning... hmm...
+        $self->chat->send_reply($self, $text);
+    }
+    else {
+        warn "Sender given is not a sender service or a bot: $sender\n";
+        $self->chat->send_reply($self, $text);
+    }
 }
 
 __PACKAGE__->meta->make_immutable;
