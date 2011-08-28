@@ -1,15 +1,28 @@
 {{$NEXT}}
 
+    * API Change: The send_message method expects a hash ref rather than plain
+      named parameters.
+    * API Change: The send_reply method no longer allows a string to be passed,
+      but requires a hash ref of named parameters.
+    * API Change: The reply method of Bot::Backbone::Message now takes two
+      arguments rather than just one. The first argument should be the service
+      or bot object sending the message so that the send policies of that sender
+      may be applied to the outgoing message. This may be something else
+      entirely or undef, but a warning will be issued in that case.
     * There's a new extensible send policy framework for helping authors build
       bots that are prevented from doing really annoying things like being too
       chatty, repeating themselves too often, etc.
-    * Send policies will be applied in all cases to chats and chat consumers
-      automatically. They are not yet applied to dispatched services.
+    * Send policies will be applied in all cases to chats, chat consumers, and
+      dispatched responders automatically.
     * A new send_policy sugar method is available via Bot::Backbone to configure
       send policies.
     * Two send policy models are provided: (1) MinimumInterval to prevent
       general flooding and (2) MinimumRepeatInterval to prevent the bot from
       repeating itself.
+    * Added a Responder service role to help in the process of building
+      dispatched responders (i.e., most services a bot author is going to write
+      up), which provides reasonable defaults for send_message/send_reply that
+      will be subject to a send policy, if set.
     * ConsoleChat now has get_line and put_line methods to allow easier
       interaction with the terminal.
     * Bugfix: The respond sugar subroutine was completely unusable.
