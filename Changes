@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.112400  2011-08-27 22:47:18 America/Chicago
+
     * API Change: The send_message method expects a hash ref rather than plain
       named parameters.
     * API Change: The send_reply method no longer allows a string to be passed,
