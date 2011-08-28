@@ -17,9 +17,17 @@ use Bot::Backbone::Service::Role::Service;
   use v5.14; # because newer Perl is cooler than older Perl
   use Bot::Backbone::Service;
 
-  with 'Bot::Backbone::Service::Role::Service';
+  with qw(
+      Bot::Backbone::Service::Role::Service
+      Bot::Backbone::Service::Role::Responder
+  );
 
-  dispatch as {
+  # Instead of Bot::Backbone::Service::Role::Responder, you may prefer to
+  # apply the Bot::Backbone::Service::Role::ChatConsumer role instead. It
+  # really depends on if this module will be used across multiple chats or
+  # needs to be tied to a specific chat.
+
+  service_dispatcher as {
       command '!echo' => given_parameters {
           parameter thing => ( match => qr/.+/ );
       } respond_by_method 'echo_back';
