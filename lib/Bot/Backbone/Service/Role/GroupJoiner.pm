@@ -29,6 +29,8 @@ option.
 
 This is the nickname to give the bot within this group.
 
+=back
+
 =cut
 
 requires 'join_group';

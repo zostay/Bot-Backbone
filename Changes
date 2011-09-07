@@ -1,4 +1,16 @@
 {{$NEXT}}
+    
+    * API Change: The join_group() method of the GroupJoiner role now accepts a
+      reference to a hash as the one and only argument rather than a string.
+      This allows it to be more flexible so that the nickname or other group
+      options may be passed when joining a chat.
+    * The JabberChat now allows you to specify the nickname the bot should have
+      in a chat room.
+    * The GroupChat service now provides a nickname attribute to set a custom
+      nickname within that group.
+    * Bugfix: Some of the dependencies in the Makefile.PL file were wrong.
+      Namely, some internal packages were incorrectly being included as
+      dependencies and POE::Loop::EV was missing.
 
 0.112400  2011-08-27 22:47:18 America/Chicago
 
