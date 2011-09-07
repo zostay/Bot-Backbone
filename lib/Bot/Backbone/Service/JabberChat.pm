@@ -197,22 +197,22 @@ has session_ready => (
     default     => 0,
 );
 
-=head2 group_names
+=head2 group_options
 
 This is a list of multi-user chat groups the bot has joined or intends to join
 once L</session_ready> becomes true.
 
 =cut
 
-has group_names => (
+has group_options => (
     is          => 'rw',
-    isa         => 'ArrayRef[Str]',
+    isa         => 'ArrayRef[HashRef]',
     required    => 1,
     default     => sub { [] },
     traits      => [ 'Array' ],
     handles     => {
-        all_group_names => 'elements',
-        add_group_name  => 'push',
+        all_group_options => 'elements',
+        add_group_options => 'push',
     },
 );
 
@@ -361,33 +361,37 @@ If the session is ready already, then the group will be joined immediately.
 sub _join_pending_groups {
     my $self = shift;
 
-    # Perform join from either the params or list of group names
-    my @pending_group_names;
+    # Perform join from either the params or list of group options
+    my @pending_group_options;
     if (@_) {
-        @pending_group_names = @_;
+        @pending_group_options = @_;
     }
     else {
-        @pending_group_names = $self->all_group_names;
+        @pending_group_options = $self->all_group_options;
     }
 
     my $account = $self->xmpp_account;
     my $conn    = $self->xmpp_connection;
 
     # Join each group requested
-    for my $group_name (@pending_group_names) {
+    for my $group_options (@pending_group_options) {
+        my $nickname = $account->nickname_for_jid($self->jid);
+        $nickname = $group_options->{nickname}
+            if defined $group_options->{nickname};
+
         $self->xmpp_muc->join_room(
             $conn,
-            $self->group_jid($group_name),
-            $account->nickname_for_jid($self->jid),
+            $self->group_jid($group_options->{group}),
+            $nickname,
         );
     }
 }
 
 sub join_group {
-    my ($self, $name) = @_;
+    my ($self, $options) = @_;
 
-    $self->add_group_name($name);
-    $self->_join_pending_groups($name) if $self->session_ready;
+    $self->add_group_options($options);
+    $self->_join_pending_groups($options) if $self->session_ready;
 }
 
 =head1 EVENT HANDLERS

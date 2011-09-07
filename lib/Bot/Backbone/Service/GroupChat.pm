@@ -46,6 +46,19 @@ has group => (
     required    => 1,
 );
 
+=head2 nickname
+
+This is the nickname to pass to the chat when joining the group. If not set, no
+special nickname will be requested.
+
+=cut
+
+has nickname => (
+    is          => 'ro',
+    isa         => 'Str',
+    predicate   => 'has_nickname',
+);
+
 =head1 METHODS
 
 =head2 initialize
@@ -56,7 +69,14 @@ Joins the L</group>.
 
 sub initialize {
     my $self = shift;
-    $self->chat->join_group($self->group);
+
+    my %options = (
+        group => $self->group,
+    );
+
+    $options{nickname} = $self->nickname if $self->has_nickname;
+
+    $self->chat->join_group(\%options);
 }
 
 =head2 send_message
