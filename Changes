@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.112500  2011-09-06 23:08:32 America/Chicago
     
     * API Change: The join_group() method of the GroupJoiner role now accepts a
       reference to a hash as the one and only argument rather than a string.
