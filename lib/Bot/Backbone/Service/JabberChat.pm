@@ -70,7 +70,7 @@ has group_domain => (
     lazy        => 1,
     default     => sub {
         my $self = shift;
-        return join '.', 'conference', $self->jid
+        return join '.', 'conference', $self->domain
     },
 );
 
