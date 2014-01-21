@@ -33,7 +33,7 @@ This is an enum with the following values:
 =cut
 
 class_type 'Moose::Meta::Class';
-enum DispatcherType, qw( bot service );
+enum DispatcherType, [qw( bot service )];
 coerce DispatcherType,
     from 'Moose::Meta::Class',
     via { 
