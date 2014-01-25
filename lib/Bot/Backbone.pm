@@ -3,6 +3,7 @@ use v5.10;
 use Moose();
 use Bot::Backbone::DispatchSugar();
 use Moose::Exporter;
+use Class::Load;
 
 use Bot::Backbone::Meta::Class::Bot;
 use Bot::Backbone::Dispatcher;
@@ -224,7 +225,7 @@ sub _resolve_class_name {
         $class_name = join '::', 'Bot::Backbone', $section, $class_name;
     }
 
-    Class::MOP::load_class($class_name);
+    Class::Load::load_class($class_name);
     return $class_name;
 }
 

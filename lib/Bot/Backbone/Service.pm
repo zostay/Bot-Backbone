@@ -4,6 +4,7 @@ use Moose();
 use Bot::Backbone::DispatchSugar();
 use Moose::Exporter;
 use Moose::Util qw( ensure_all_roles );
+use Class::Load;
 
 use Bot::Backbone::Meta::Class::Service;
 use Bot::Backbone::Dispatcher;
@@ -78,7 +79,7 @@ Similar to C<with> provided by L<Moose>, this defines a list of roles that shoul
 
 sub with_bot_roles {
     my ($meta, @roles) = @_;
-    Class::MOP::load_class($_) for @roles;
+    Class::Load::load_class($_) for @roles;
     $meta->add_bot_roles(@roles);
 }
 
