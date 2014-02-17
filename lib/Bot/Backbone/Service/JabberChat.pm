@@ -503,6 +503,10 @@ sub got_group_message {
         );
     }
 
+    # Is this a message sent privately within the room?
+    my $private = $xmpp_message->is_private;
+    my $volumn  = $private ? 'whisper' : 'spoken';
+
     # Build the message
     my $message = Bot::Backbone::Message->new({
         chat => $self,
@@ -511,9 +515,10 @@ sub got_group_message {
             nickname => $from_nickname,
             me       => $is_me,
         ),
-        to    => $to_identity,
-        group => $group,
-        text  => $text,
+        to     => $to_identity,
+        group  => $group,
+        text   => $text,
+        volume => $volume,
     });
 
     # Pass it on
