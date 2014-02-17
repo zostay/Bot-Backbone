@@ -365,6 +365,24 @@ direct message or a channel message prefixed by the bot's name.
 This is the opposite of L</to_me>. It matches any message not sent directly to
 the bot.
 
+=head2 shouted
+
+  shouted ...
+
+Matches messages that are received from outside the current chat, such as a system message or administrator alert sent to all channels.
+
+head2 spoken
+
+  spoken ...
+
+Matches messages that are stated within the channel to all participants. This is the usual volume level.
+
+=head2 whispered
+
+  whispered ...
+
+Matches messages that are stated within the channel to only a subset of the listeners, such as a private message within a channel.
+
 =head2 also
 
   also ...;

@@ -138,6 +138,35 @@ __PACKAGE__->meta->make_immutable;
 }
 
 {
+    package Bot::Backbone::Dispatcher::Predicate::Volume;
+    use v5.10;
+    use Moose;
+
+    extends 'Bot::Backbone::Dispatcher::Predicate::Nesting';
+
+    use Bot::Backbone::Types qw( VolumeLevel );
+
+    has volume => (
+        is          => 'ro',
+        isa         => VolumeLevel,
+        required    => 1,
+        default     => 'spoken',
+    );
+
+    override do_it => sub {
+        my ($self, $service, $message) = @_;
+
+        if ($self->volume eq $message->volume) {
+            return super();
+        }
+
+        return '';
+    };
+
+    __PACKAGE__->meta->make_immutable;
+}
+
+{
     package Bot::Backbone::Dispatcher::Predicate::GivenParameters;
     use v5.10;
     use Moose;

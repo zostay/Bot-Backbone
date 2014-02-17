@@ -9,6 +9,7 @@ use MooseX::Types -declare => [ qw(
     EventLoop
     PredicateList
     ServiceList
+    VolumeLevel
 ) ];
 use Scalar::Util qw( blessed );
 
@@ -72,5 +73,17 @@ class_type 'Bot::Backbone::Service::Role::Service';
 subtype ServiceList,
     as HashRef[Object],
     where { all { blessed $_ and $_->does('Bot::Backbone::Service::Role::Service') } values %$_ };
+
+=head2 VolumeLevel
+
+This is an enumeration of possible volume levels for chats. It must be one of the following:
+
+    shout
+    spoken
+    whisper
+
+=cut
+
+enum VolumeLevel, [ qw( shout spoken whisper ) ];
 
 __PACKAGE__->meta->make_immutable;

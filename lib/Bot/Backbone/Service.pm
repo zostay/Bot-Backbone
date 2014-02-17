@@ -150,6 +150,18 @@ C<not_to_me>
 
 =item *
 
+C<shouted>
+
+=item *
+
+C<spoken>
+
+=item *
+
+C<whispered>
+
+=item *
+
 C<also>
 
 =back
