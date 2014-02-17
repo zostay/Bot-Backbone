@@ -444,6 +444,15 @@ Given the user that identifies the bot in a group chat and text that was just se
   nick, ...
   nick- ...
 
+It also includes suffix references like this:
+
+  ..., nick.
+  ..., nick
+
+and infix references like this:
+
+  ..., nick, ...
+
 If you want something different, you may subclass service and override this method.
 
 =cut
@@ -452,7 +461,10 @@ sub is_to_me {
     my ($self, $me_user, $text) = @_;
 
     my $me_nick = $me_user->nick;
-    return scalar $text =~ s/^ $me_nick \s* [:,\-] //x;
+    return scalar $text =~ s/^ $me_nick \s* [:,\-]
+                            |  , \s* $me_nick [.]? $
+                            |  , \s* $me_nick \s* , 
+                            //x;
 }
 
 =head2 got_group_message
