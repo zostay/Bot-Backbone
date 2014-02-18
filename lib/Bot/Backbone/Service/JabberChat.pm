@@ -517,7 +517,7 @@ sub got_group_message {
 
     # Is this a message sent privately within the room?
     my $private = $xmpp_message->is_private;
-    my $volumn  = $private ? 'whisper' : 'spoken';
+    my $volume  = $private ? 'whisper' : 'spoken';
 
     # Build the message
     my $message = Bot::Backbone::Message->new({
