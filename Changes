@@ -1,5 +1,23 @@
 {{$NEXT}}
 
+    * Made it so that the notion of is_to_me on Jabber messages is easier to
+      override.
+    * Updated the default notion of is_to_me to cover a few more cases, such as
+      infix and suffix mentions of the bot by name.
+    * XMPP MUC chats (group chats) use the volume level to specify whether a
+      message is a PM (whisper) or a channel message (spoken).
+    * Added a new volume attribute to messages and a set of volume-related
+      predicates for use in dispatchers.
+    * Bugfix: Corrects [rt.cpan.org #78211] reported by IRONCAMEL. This was a
+      known problem from the beginning that POE::Loop::EV has problems during
+      testing. However, it proved itself to be the only stable event loop that
+      cooperated with AnyEvent on RedHat, which was where my bot first ran. I've
+      now replaced it with POE::Loop::AnyEvent, which works well on the Centos
+      machines I am using in production now.
+    * Bugfix: Corrects [rt.cpan.org #90695] reported by Upasana Shukla and
+      patched by Zoffix Znet. The usage of enum in one instance was deprecated
+      and has now been fixed.
+
 0.140280  2014-01-28 07:05:02 America/Chicago
 
     * Bugfix: Corrects [rt.cpan.org #90955] reported by Upasana Shukla and
