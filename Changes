@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.140590  2014-02-28 10:20:15 America/Chicago
+
     * Bugfix: The code that detects whether the message "is_to_me" is supposed
       to strip the nick from the message if it is. The previous release stopped
       doing that correctly.
