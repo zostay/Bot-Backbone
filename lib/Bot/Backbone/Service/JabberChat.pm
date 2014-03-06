@@ -404,6 +404,27 @@ message on the associated chat consumers and the dispatcher.
 
 =cut
 
+sub _identity_from_jid {
+    my ($self, $jid) = @_;
+
+    my $contact = $self->xmpp_contact($jid);
+
+    if (defined $contact) {
+        return Bot::Backbone::Identity->new(
+            username => $contact->jid,
+            nickname => $contact->name // $contact->jid,
+            me       => $contact->is_me,
+        );
+    }
+    else {
+        return Bot::Backbone::Identity->new(
+            username => $jid,
+            nickname => $jid,
+            me       => 0,
+        );
+    }
+}
+
 sub got_direct_message {
     my ($self, $client, $account, $xmpp_message) = @_;
 
@@ -414,16 +435,8 @@ sub got_direct_message {
 
     my $message = Bot::Backbone::Message->new({
         chat => $self,
-        from => Bot::Backbone::Identity->new(
-            username => $from_contact->jid,
-            nickname => $from_contact->name // $from_contact->jid,
-            me       => $from_contact->is_me,
-        ),
-        to   => Bot::Backbone::Identity->new(
-            username => $to_contact->jid,
-            nickname => $to_contact->name // $to_contact->jid,
-            me       => $to_contact->is_me,
-        ),
+        from => $self->_identity_from_jid($xmpp_message->to),
+        to   => $self->_identity_from_jid($xmpp_message->from),
         group => undef,
         text  => $xmpp_message->body,
     });

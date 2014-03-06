@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    * Bugfix: It's possible to receive an IM from someone we do not have on
+      roster and we do not have a presence reported for. Make sure that doesn't
+      cause us to choke.
+
 0.140590  2014-02-28 10:20:15 America/Chicago
 
     * Bugfix: The code that detects whether the message "is_to_me" is supposed
