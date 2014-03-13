@@ -216,6 +216,32 @@ has group_options => (
     },
 );
 
+=head2 error_callback
+
+This callback is executed in case of an error. It will receive two arguments
+like so:
+
+  $callback->($service, $message);
+
+The first argument is the L<Bot::Backbone::Service::JabberChat> object and the
+second is the error message the server sent. The default handler uses warn to
+log the message to the console.
+
+=cut
+
+has error_callback => (
+    is          => 'rw',
+    isa         => 'CodeRef',
+    lazy_build  => 1,
+);
+
+sub _build_error_callback {
+    return sub {
+        my ($self, $message) = @_;
+        warn "XMPP Error: ", $message, "\n";
+    }
+}
+
 =head1 METHODS
 
 =head2 jid
@@ -337,7 +363,7 @@ sub initialize {
         # TODO Need more robust logging
         error         => sub { 
             my ($client, $account, $error) = @_;
-            warn "XMPP Error: ", $error->string, "\n";
+            $self->error_callback->($self, $error->string);
         },
     );
 
