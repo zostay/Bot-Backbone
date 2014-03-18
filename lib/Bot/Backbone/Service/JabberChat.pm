@@ -135,6 +135,53 @@ has connection_args => (
     isa         => 'HashRef',
 );
 
+=head2 debug_client
+
+Set to true if you want to enable debugging. This uses the built-in debug option
+of L<AnyEvent::XMPP::Client>. If you want more control over how debugging is
+handled, see L</xmpp_debug_recv_callback> and L</xmpp_debug_send_callback>.
+
+=cut
+
+has debug_client => (
+    is          => 'ro',
+    isa         => 'Bool',
+    required    => 1,
+    default     => 0,
+);
+
+=head2 xmpp_debug_send_callback
+
+=head2 xmpp_debug_recv_callback
+
+These attributes may be set to a code reference that will be called with every
+message received from the XMPP server. This could be useful for troubleshooting
+certain kinds of problems in cases where you'd like more control over the output
+than you get from L</debug>.
+
+Each will be called like this:
+
+  $callback->($service, $xmpp_client, $account, $data);
+
+The C<$service> is this object. The C<$xmpp_client> will be the same object as
+is returned by L</xmpp_client>. The C<$account> is the
+L<AnyEvent::XMPP::Account> the bot has connected as (useful for getting the
+jid). And the C<$data> is the raw XML being sent or received.
+
+=cut
+
+has xmpp_debug_send_callback => (
+    is          => 'ro',
+    isa         => 'CodeRef',
+    predicate   => 'has_xmpp_debug_send_callback',
+);
+
+has xmpp_debug_recv_callback => (
+    is          => 'ro',
+    isa         => 'CodeRef',
+    predicate   => 'has_xmpp_debug_recv_callback',
+);
+
 =head2 xmpp_client
 
 This is the XMPP client object for organizing connections.
@@ -148,7 +195,30 @@ has xmpp_client => (
     lazy_build  => 1,
 );
 
-sub _build_xmpp_client { AnyEvent::XMPP::Client->new }
+sub _build_xmpp_client { 
+    my $self = shift;
+
+    my $client = AnyEvent::XMPP::Client->new(
+        debug => $self->debug,
+    );
+
+    for my $type (qw( send recv )) {
+        my $has_callback = "has_xmpp_debug_${type}_callback";
+        my $get_callback = "xmpp_debug_${type}_callback";
+
+        if ($self->$has_callback) {
+            my $callback = $self->$get_callback;
+            $client->reg_cb(
+                "debug_$type" => sub {
+                    my ($client, $acc, $data) = @_;
+                    $callback->($self, $client, $acc, $data);
+                }
+            );
+        }
+    }
+
+    return $client;
+}
 
 =head2 xmpp_disco
 
