@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    * Added new client debugging settings to XMPP
     * Bugfix: It's possible to receive an IM from someone we do not have on
       roster and we do not have a presence reported for. Make sure that doesn't
       cause us to choke.

@@ -199,7 +199,7 @@ sub _build_xmpp_client {
     my $self = shift;
 
     my $client = AnyEvent::XMPP::Client->new(
-        debug => $self->debug,
+        debug => $self->debug_client,
     );
 
     for my $type (qw( send recv )) {
