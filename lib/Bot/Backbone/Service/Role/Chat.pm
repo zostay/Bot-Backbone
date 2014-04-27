@@ -19,7 +19,7 @@ L<Bot::Backbone::Service::JabberChat>.
 
 =head2 chat_consumers
 
-This is a list of L<Bot::Backbone::Service::Role::ChatConsumer>s that hvae registered to
+This is a list of L<Bot::Backbone::Service::Role::ChatConsumer>s that have registered to
 receive messages from this chat service. A chat consumer is registered using the
 C<register_chat_cnosumer> method. A C<list_chat_consumers> method is provided to
 list the registered consumers.
