@@ -45,6 +45,7 @@ __PACKAGE__->meta->make_immutable;
         handles      => [ 'do_it' ],
     );
 
+    # This is what handles => [ 'do_it' ] is doing above
     # sub do_it {
     #     my ($self, $service, $message) = @_;
     #     return $self->next_predicate->do_it($service, $message);

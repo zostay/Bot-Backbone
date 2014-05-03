@@ -422,6 +422,12 @@ Given the name of a method defined on the current bot package, that method will 
 
 It is called and used exactly as described under L</respond>.
 
+=head2 respond_with_service_method
+
+  respond_with_service_method 'method_name'
+
+This directive should only be used with dispatchers created in the bot class and then assigned to the service using the L<Bot::Backbone::Service::Role::Dispatch/dispatcher> attribute. This allows the bot to define dispatchers on behalf of a service, which still calls the services methods.
+
 =head2 run_this
 
   run_this { ... }
@@ -434,6 +440,12 @@ message, and the service as arguments. The return value is ignored.
   run_this_method 'method_name'
 
 This will execute the named method on the bot class. It will be called and used in exactly the same way as L</run_this>.
+
+=head2 run_this_service_method
+
+  run_this_service_method 'method_name'
+
+This dispatch directive should only be used on dispatchers that are assigned to a service using the L<Bot::Backbone::Service::Role::Dispatch/dispatcher> argument. It allows the bot to specify a custom dispatcher for that service that still calls that service's methods.
 
 =cut
 

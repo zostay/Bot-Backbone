@@ -186,11 +186,19 @@ C<respond_with_method>. As stated for C<respond>, the first argument is the serv
 
 =item *
 
+C<respond_with_bot_method>. This is similar to C<respond_with_method>, but instead of calling a method within the service, it will call a method directly on the bot to which the service has been added.
+
+=item *
+
 C<run_this>. This run mode operation will be passed the service object as the first argument, rather than that bot object.
 
 =item *
 
 C<run_this_method>. As stated for C<respond>, the first argument is the service object. The method is also a method defined within the current service package rather than the bot.
+
+=item *
+
+C<run_this_bot_method>. This is similar to C<run_this_method>, but results in a call to a method on the bot object rather than on the service.
 
 =back
 
