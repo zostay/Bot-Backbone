@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    * Added the respond_by_bot_method, respond_by_service_method,
+      run_this_bot_method, and run_this_service_method dispatch sugar
+      directives.
+
 0.141180  2014-04-27 22:06:19 America/Chicago
 
     * Added new client debugging settings to XMPP
