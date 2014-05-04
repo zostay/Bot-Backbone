@@ -4,7 +4,7 @@ use Moose;
 
 use lib 't/lib';
 use Bot::Backbone::TestEventLoop;
-use Test::More tests => 11;
+use Test::More tests => 21;
 
 {
     package TestBot::Service::Foo;
@@ -25,7 +25,6 @@ use Test::More tests => 11;
     sub initialize { 
         my $self = shift;
         pass('initialized');
-        $self->dispatcher;
     }
 
     sub send_message { die }
@@ -61,10 +60,15 @@ use Test::More tests => 11;
         is($_[1]->text, '', 'dispatched to service method');
 
         fail('ran too many times') if $_[0]->inc > 2;
+
+        'barbar';
     }
 
     sub send_message { die }
-    sub send_reply   { die }
+    sub send_reply {
+        my ($self, $message, $options) = @_;
+        is($options->{text}, 'barbar', 'got barbar');
+    }
 }
 
 {
@@ -95,6 +99,14 @@ use Test::More tests => 11;
         service => '.Bar',
     );
 
+    service baz => (
+        service  => '.Bar',
+        commands => {
+            '!bazfoo' => '!barfoo',
+            '!bazbar' => '!barbar',
+        },
+    );
+
     dispatcher test => as {
         command '!foo' => run_this { 
             #diag explain \@_;
@@ -112,6 +124,9 @@ use Test::More tests => 11;
 
         command '!qux'  => run_this_method 'some_method';
         command '!quux' => respond_by_method 'some_method';
+
+        redispatch_to 'bar';
+        redispatch_to 'baz';
     };
 
     sub some_method {
@@ -133,3 +148,5 @@ $chat->dispatch( text => '!qux' );
 $chat->dispatch( text => '!quux' );
 $chat->dispatch( text => '!barfoo' );
 $chat->dispatch( text => '!barbar' );
+$chat->dispatch( text => '!bazfoo' );
+$chat->dispatch( text => '!bazbar' );

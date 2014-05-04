@@ -125,8 +125,8 @@ sub _apply_command_rewrite {
     my $iterator = $self->dispatcher->predicate_iterator;
     while (my $predicate = $iterator->next_predicate) {
         if ($predicate->isa('Bot::Backbone::Dispatcher::Predicate::Command')) {
-            if ($commands{ $self->match }) {
-                $self->match( $commands{ $self->match } );
+            if ($commands{ $predicate->match }) {
+                $predicate->match( $commands{ $predicate->match } );
             }
         }
     }
@@ -153,5 +153,16 @@ sub dispatch_message {
         $self->dispatcher->dispatch_message($self, $message);
     }
 }
+
+=head2 initialize
+
+Make sure the dispatcher is initialized by initialization.
+
+=cut
+
+before initialize => sub {
+    my $self = shift;
+    $self->dispatcher;
+};
 
 1;
