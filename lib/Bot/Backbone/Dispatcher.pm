@@ -3,6 +3,7 @@ use v5.10;
 use Moose;
 
 use Bot::Backbone::Types qw( PredicateList );
+use Bot::Backbone::Dispatcher::PredicateIterator;
 
 # ABSTRACT: Simple dispatching tool
 
@@ -105,6 +106,24 @@ sub add_predicate_or_return {
     else {
         $self->add_predicate($predicate);
     }
+}
+
+=head2 predicate_iterator
+
+  my $iterator = $dispatcher->predicate_iterator;
+  while (my $predicate = $iterator->next) {
+      # do something...
+  }
+
+Returns a L<Bot::Backbone::Dispatcher::PredicateIterator> for this dispatcher.
+
+=cut
+
+sub predicate_iterator {
+    my $self = shift;
+    return Bot::Backbone::Dispatcher::PredicateIterator->new(
+        dispatcher => $self,
+    );
 }
 
 __PACKAGE__->meta->make_immutable;

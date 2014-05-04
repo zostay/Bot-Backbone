@@ -1,6 +1,6 @@
 package Bot::Backbone::Dispatcher::Predicate;
 use v5.10;
-use Moose;
+use Moose::Role;
 
 # ABSTRACT: Defines the predicate packages responsible for aiding dispatch
 
@@ -10,14 +10,14 @@ Not much to see here unless you want to define custom predicates. If that is you
 
 =cut
 
-__PACKAGE__->meta->make_immutable;
+requires qw( do_it more_predicates );
 
 {
     package Bot::Backbone::Dispatcher::Predicate::RedispatchTo;
     use v5.10;
     use Moose;
 
-    extends 'Bot::Backbone::Dispatcher::Predicate';
+    with 'Bot::Backbone::Dispatcher::Predicate';
 
     has name => ( is => 'ro', isa => 'Str', required => 1 );
 
@@ -28,6 +28,17 @@ __PACKAGE__->meta->make_immutable;
         return $redispatch_service->dispatch_message($message);
     }
 
+    sub more_predicates {
+        my ($self, $service) = @_;
+
+        my $redispatch_service = $service->get_service($self->name);
+        my $dispatcher = $redispatch_service->dispatcher;
+        return (
+            $dispatcher->list_predicates,
+            $dispatcher->list_also_predicates,
+        );
+    }
+
     __PACKAGE__->meta->make_immutable;
 }
 
@@ -36,8 +47,6 @@ __PACKAGE__->meta->make_immutable;
     use v5.10;
     use Moose;
 
-    extends 'Bot::Backbone::Dispatcher::Predicate';
-
     has next_predicate => ( 
         is           => 'ro', 
         isa          => 'Bot::Backbone::Dispatcher::Predicate',
@@ -45,11 +54,18 @@ __PACKAGE__->meta->make_immutable;
         handles      => [ 'do_it' ],
     );
 
+    with 'Bot::Backbone::Dispatcher::Predicate';
+
     # This is what handles => [ 'do_it' ] is doing above
     # sub do_it {
     #     my ($self, $service, $message) = @_;
     #     return $self->next_predicate->do_it($service, $message);
     # }
+
+    sub more_predicates {
+        my ($self, $service) = @_;
+        return ($self->next_predicate);
+    }
 
     __PACKAGE__->meta->make_immutable;
 }
@@ -62,7 +78,7 @@ __PACKAGE__->meta->make_immutable;
     extends 'Bot::Backbone::Dispatcher::Predicate::Nesting';
 
     has match => (
-        is          => 'ro',
+        is          => 'rw',
         isa         => 'Str|RegexpRef',
         required    => 1,
     );
@@ -243,9 +259,7 @@ __PACKAGE__->meta->make_immutable;
 {
     package Bot::Backbone::Dispatcher::Predicate::Functor;
     use v5.10;
-    use Moose;
-
-    extends 'Bot::Backbone::Dispatcher::Predicate';
+    use Moose::Role;
 
     use Bot::Backbone::Types qw( DispatcherType );
 
@@ -277,7 +291,10 @@ __PACKAGE__->meta->make_immutable;
     use v5.10;
     use Moose;
 
-    extends 'Bot::Backbone::Dispatcher::Predicate::Functor';
+    with qw(
+        Bot::Backbone::Dispatcher::Predicate
+        Bot::Backbone::Dispatcher::Predicate::Functor
+    );
 
     sub do_it {
         my ($self, $service, $message) = @_;
@@ -295,6 +312,8 @@ __PACKAGE__->meta->make_immutable;
         return '';
     }
 
+    sub more_predicates { () }
+
     __PACKAGE__->meta->make_immutable;
 }
 
@@ -303,13 +322,18 @@ __PACKAGE__->meta->make_immutable;
     use v5.10;
     use Moose;
 
-    extends 'Bot::Backbone::Dispatcher::Predicate::Functor';
+    with qw(
+        Bot::Backbone::Dispatcher::Predicate
+        Bot::Backbone::Dispatcher::Predicate::Functor
+    );
 
     sub do_it {
         my ($self, $service, $message) = @_;
         my $invocant = $self->select_invocant($service);
         return $self->call_the_code($invocant, $message);
     }
+
+    sub more_predicates { () }
 
     __PACKAGE__->meta->make_immutable;
 }

@@ -9,6 +9,16 @@ This metaclass role is used to help the sugar subroutines setup a dispatcher. Th
 
 =cut
 
+has dispatch_builder => (
+    is          => 'rw',
+    isa         => 'CodeRef',
+    predicate   => 'has_dispatch_builder',
+    traits      => [ 'Code' ],
+    handles     => {
+        run_dispatch_builder => 'execute',
+    },
+);
+
 has building_dispatcher => (
     is          => 'rw',
     isa         => 'Bot::Backbone::Dispatcher',

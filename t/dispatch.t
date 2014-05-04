@@ -23,7 +23,9 @@ use Test::More tests => 11;
     };
 
     sub initialize { 
+        my $self = shift;
         pass('initialized');
+        $self->dispatcher;
     }
 
     sub send_message { die }

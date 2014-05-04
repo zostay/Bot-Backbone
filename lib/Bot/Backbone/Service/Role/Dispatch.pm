@@ -31,7 +31,7 @@ dispatcher to load from the bot during initialization.
 =cut
 
 has dispatcher_name => (
-    is          => 'ro',
+    is          => 'rw',
     isa         => 'Str',
     init_arg    => 'dispatcher',
     predicate   => 'has_dispatcher',
@@ -50,20 +50,93 @@ A C<dispatch_message> method is also delegated to the dispatcher.
 =cut
 
 has dispatcher => (
-    is          => 'ro',
+    is          => 'rw',
     isa         => 'Bot::Backbone::Dispatcher',
     init_arg    => undef,
-    lazy        => 1,
-    default     => sub {
-        my $self = shift;
-        $self->bot->meta->dispatchers->{ $self->dispatcher_name };
-    },
-
-    # lazy_build implies (predicate => has_dispatcher)
+    lazy_build  => 1,
     predicate   => 'has_setup_the_dispatcher', 
 );
 
+sub _build_dispatcher {
+    my $self = shift;
+
+    # If a named dispatcher is given use that
+    if ($self->has_dispatcher) {
+        return $self->bot->meta->dispatchers->{ $self->dispatcher_name };
+    }
+
+    # If we have a dispatch builder
+    elsif ($self->meta->has_dispatch_builder) {
+        $self->dispatcher_name('<service_dispatcher>');
+        return $self->meta->run_dispatch_builder;
+    }
+
+    # Use an empty dispatcher
+    else {
+        $self->dispatcher_name('<empty>');
+        return Bot::Backbone::Dispatcher->new;
+    }
+}
+
+=haed2 commands
+
+This is an optional setting for any dispatched service. Sometimes it is nice to use the same service more than once in a given context, but that does not work well when the service uses a fixed set of commands. This allows the commands to be remapped. It may also be that a user simply doesn't like the names originally chosen and this lets them change the names of any command.
+
+This attribute takes a reference to a hash of strings which are used to remap the commands. The keys are the new commands to use and the values are the commands that should be replaced. A given command can only be renamed once.
+
+For example,
+
+  service roll => (
+      service  => 'OFun::Roll',
+      commands => {
+          '!rolldice' => '!roll',
+          '!flipcoin' => '!flip',
+      },
+  );
+
+Using the L<Bot::Backbone::Service::OFun::Roll> service, This would rename the C<!roll> command to C<!rolldice> and C<!flip> to C<!flipcoin>. In this case, using C<!roll> in a chat with the bot would no longer have any effect on the service named "roll", but C<!rolldice> would report the outcome of a dice roll.
+
+If this does not provide enough flexibility, you can always go the route of completely replacing a service dispatcher with a new one (and you may want to check out L<Bot::Backbone/respond_by_service_method> and L<Bot::Backbone/run_this_service_method> for help doing that from the bot configuration). You can also define custom code to use L<Bot::Backbone::Dispatcher/predicate_iterator> that walks the entire dispatcher tree and makes changes as needed, which is how this is implemented internally.
+
+=cut
+
+has commands => (
+    is          => 'ro',
+    isa         => 'HashRef[Str]',
+    predicate   => 'has_custom_commands',
+    traits      => [ 'Hash' ],
+    handles     => {
+        command_map => 'elements',
+    },
+);
+
 =head1 METHODS
+
+=head2 BUILD
+
+Rewrites the dispatcher according to the commands renamed in L</commands>.
+
+=cut
+
+sub _apply_command_rewrite {
+    my $self = shift;
+    my %commands = reverse $self->command_map;
+
+    my $iterator = $self->dispatcher->predicate_iterator;
+    while (my $predicate = $iterator->next_predicate) {
+        if ($predicate->isa('Bot::Backbone::Dispatcher::Predicate::Command')) {
+            if ($commands{ $self->match }) {
+                $self->match( $commands{ $self->match } );
+            }
+        }
+    }
+}
+
+sub BUILD {
+    my $self = shift;
+
+    $self->_apply_command_rewrite if $self->has_custom_commands;
+}
 
 =head2 dispatch_message
 

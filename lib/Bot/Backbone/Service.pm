@@ -96,26 +96,15 @@ sub service_dispatcher($) {
 
     ensure_all_roles($meta->name, 'Bot::Backbone::Service::Role::Dispatch');
 
-    my $dispatcher_name_attr = $meta->find_attribute_by_name('dispatcher_name');
-    my $new_dispatcher_name_attr = $dispatcher_name_attr->clone_and_inherit_options(
-        default => '<From Bot::Backbone::Service>',
-    );
-    $meta->add_attribute($new_dispatcher_name_attr);
-
-    my $dispatcher_attr = $meta->find_attribute_by_name('dispatcher');
-    my $new_dispatcher_attr = $dispatcher_attr->clone_and_inherit_options(
-        default => sub {
-            my $dispatcher = Bot::Backbone::Dispatcher->new;
-            {
-                $meta->building_dispatcher($dispatcher);
-                $code->();
-                $meta->no_longer_building_dispatcher,
-            }
-            return $dispatcher;
-        },
-    );
-    $meta->add_attribute($new_dispatcher_attr);
-
+    $meta->dispatch_builder(sub {
+        my $dispatcher = Bot::Backbone::Dispatcher->new;
+        {
+            $meta->building_dispatcher($dispatcher);
+            $code->();
+            $meta->no_longer_building_dispatcher,
+        }
+        return $dispatcher;
+    });
 }
 
 =head1 DISPATCHER PREDICATES

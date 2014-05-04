@@ -59,9 +59,10 @@ This is an array of code references.
 
 =cut
 
-class_type 'Bot::Backbone::Dispatcher::Predicate';
+role_type 'Bot::Backbone::Dispatcher::Predicate';
 subtype PredicateList,
-    as ArrayRef['Bot::Backbone::Dispatcher::Predicate'];
+    as ArrayRef,
+    where { all { $_->does('Bot::Backbone::Dispatcher::Predicate') } @$_ };
 
 =head2 ServiceList
 
