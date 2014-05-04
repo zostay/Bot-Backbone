@@ -1,5 +1,13 @@
 {{$NEXT}}
 
+    * Added the ability to rewrite commands easily through the new commands
+      attribute on dispatched services.
+    * Added the predicate_iterator method to the dispatcher to allow classes to
+      iterate over predicates and tweak them.
+    * API Change: This is mostly in undocumentd internals, but just anyone that
+      added custom predicates will now be broken.
+      Bot::Backbone::Dispatcher::Predicate is now a role instead of a base
+      class. Done to facilitate predicate iteration.
     * Added the respond_by_bot_method, respond_by_service_method,
       run_this_bot_method, and run_this_service_method dispatch sugar
       directives.
