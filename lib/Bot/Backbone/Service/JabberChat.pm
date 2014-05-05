@@ -1,6 +1,6 @@
 package Bot::Backbone::Service::JabberChat;
 use v5.10;
-use Moose;
+use Moose -traits => 'Bot::Backbone::Meta::Class::DispatchBuilder';
 
 with qw(
     Bot::Backbone::Service::Role::Service
