@@ -1,6 +1,6 @@
 package Bot::Backbone::Service::DirectChat;
 use v5.10;
-use Moose;
+use Bot::Backbone::Service;
 
 with qw(
     Bot::Backbone::Service::Role::Service
