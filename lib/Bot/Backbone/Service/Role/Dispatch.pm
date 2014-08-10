@@ -78,7 +78,7 @@ sub _build_dispatcher {
     }
 }
 
-=haed2 commands
+=head2 commands
 
 This is an optional setting for any dispatched service. Sometimes it is nice to use the same service more than once in a given context, but that does not work well when the service uses a fixed set of commands. This allows the commands to be remapped. It may also be that a user simply doesn't like the names originally chosen and this lets them change the names of any command.
 
