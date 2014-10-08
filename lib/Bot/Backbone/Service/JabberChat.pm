@@ -577,7 +577,7 @@ sub is_to_me {
 
     my $me_nick = $me_user->nick;
     return scalar($$text =~ s/^ $me_nick \s* [:,\-]
-                             |  , \s* $me_nick [.]? $
+                             |  , \s* $me_nick [.!?]? $
                              |  , \s* $me_nick \s* , 
                              //x);
 }
