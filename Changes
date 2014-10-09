@@ -5,6 +5,8 @@
     * Tweaked the "is_to_me" method of Bot::Backbone::Service::JabberChat to
       allow the bot to identify messages sent to it that end in an exclamation
       point ("!") or ("?") as well as a period (".").
+    * Added an IRC link to the #backbone channel on irc.perl.org where I have a
+      bot demoing the features of the framework.
 
 0.142220  2014-08-09 22:47:33-05:00 America/Chicago
 
