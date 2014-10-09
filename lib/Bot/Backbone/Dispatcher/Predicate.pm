@@ -1,4 +1,5 @@
 package Bot::Backbone::Dispatcher::Predicate;
+
 use v5.10;
 use Moose::Role;
 
@@ -14,6 +15,7 @@ requires qw( do_it more_predicates );
 
 {
     package Bot::Backbone::Dispatcher::Predicate::RedispatchTo;
+
     use v5.10;
     use Moose;
 
@@ -44,6 +46,7 @@ requires qw( do_it more_predicates );
 
 {
     package Bot::Backbone::Dispatcher::Predicate::Nesting;
+
     use v5.10;
     use Moose;
 
@@ -72,6 +75,7 @@ requires qw( do_it more_predicates );
 
 {
     package Bot::Backbone::Dispatcher::Predicate::Command;
+
     use v5.10;
     use Moose;
 
@@ -101,6 +105,7 @@ requires qw( do_it more_predicates );
 
 {
     package Bot::Backbone::Dispatcher::Predicate::NotCommand;
+
     use v5.10;
     use Moose;
 
@@ -121,6 +126,7 @@ requires qw( do_it more_predicates );
 
 {
     package Bot::Backbone::Dispatcher::Predicate::ToMe;
+
     use v5.10;
     use Moose;
 
@@ -156,6 +162,7 @@ requires qw( do_it more_predicates );
 
 {
     package Bot::Backbone::Dispatcher::Predicate::Volume;
+
     use v5.10;
     use Moose;
 
@@ -185,6 +192,7 @@ requires qw( do_it more_predicates );
 
 {
     package Bot::Backbone::Dispatcher::Predicate::GivenParameters;
+
     use v5.10;
     use Moose;
 
@@ -258,6 +266,7 @@ requires qw( do_it more_predicates );
 
 {
     package Bot::Backbone::Dispatcher::Predicate::Functor;
+
     use v5.10;
     use Moose::Role;
 
@@ -288,6 +297,7 @@ requires qw( do_it more_predicates );
 
 {
     package Bot::Backbone::Dispatcher::Predicate::Respond;
+
     use v5.10;
     use Moose;
 
@@ -319,6 +329,7 @@ requires qw( do_it more_predicates );
 
 {
     package Bot::Backbone::Dispatcher::Predicate::Run;
+
     use v5.10;
     use Moose;
 

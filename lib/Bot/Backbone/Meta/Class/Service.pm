@@ -1,4 +1,5 @@
 package Bot::Backbone::Meta::Class::Service;
+
 use Moose;
 
 extends 'Moose::Meta::Class';

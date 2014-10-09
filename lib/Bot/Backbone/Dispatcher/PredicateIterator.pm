@@ -1,4 +1,5 @@
 package Bot::Backbone::Dispatcher::PredicateIterator;
+
 use v5.10;
 use Moose;
 

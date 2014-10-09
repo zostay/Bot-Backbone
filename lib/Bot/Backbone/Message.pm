@@ -1,4 +1,5 @@
 package Bot::Backbone::Message;
+
 use v5.10;
 use Moose;
 
@@ -125,6 +126,7 @@ has text => (
 
 {
     package Bot::Backbone::Message::Arg;
+
     use Moose;
 
     has [ qw( text original ) ] => (

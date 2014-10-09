@@ -1,4 +1,5 @@
 package Bot::Backbone::Service::Role::Storage;
+
 use Moose::Role;
 
 use DBIx::Connector;

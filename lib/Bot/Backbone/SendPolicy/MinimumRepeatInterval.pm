@@ -1,4 +1,5 @@
 package Bot::Backbone::SendPolicy::MinimumRepeatInterval;
+
 use v5.10;
 use Moose;
 

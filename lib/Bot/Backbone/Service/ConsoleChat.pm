@@ -1,4 +1,5 @@
 package Bot::Backbone::Service::ConsoleChat;
+
 use v5.10;
 use Bot::Backbone::Service;
 

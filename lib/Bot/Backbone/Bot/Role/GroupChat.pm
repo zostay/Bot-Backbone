@@ -1,4 +1,5 @@
 package Bot::Backbone::Bot::Role::GroupChat;
+
 use v5.10;
 use Moose::Role;
 

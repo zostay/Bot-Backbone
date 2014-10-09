@@ -1,4 +1,5 @@
 package Bot::Backbone::Service::Role::Responder;
+
 use v5.10;
 use Moose::Role;
 

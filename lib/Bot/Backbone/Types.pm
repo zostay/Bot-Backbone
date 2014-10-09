@@ -1,4 +1,5 @@
 package Bot::Backbone::Types;
+
 use v5.10;
 use Moose;
 

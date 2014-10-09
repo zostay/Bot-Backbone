@@ -1,4 +1,5 @@
 package Bot::Backbone::DispatchSugar;
+
 use v5.10;
 use Moose();
 use Moose::Exporter;

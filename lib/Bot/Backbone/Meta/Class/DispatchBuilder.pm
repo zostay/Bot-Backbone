@@ -1,4 +1,5 @@
 package Bot::Backbone::Meta::Class::DispatchBuilder;
+
 use Moose::Role;
 
 # ABSTRACT: Metaclass role providing dispatcher setup helps

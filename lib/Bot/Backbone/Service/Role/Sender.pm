@@ -1,4 +1,5 @@
 package Bot::Backbone::Service::Role::Sender;
+
 use Moose::Role;
 
 # ABSTRACT: Marks a service as one that may send messages
