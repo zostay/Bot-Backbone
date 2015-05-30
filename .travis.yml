@@ -1,0 +1,14 @@
+language: perl
+perl:
+  - "5.20"
+  - "5.18"
+  - "5.16"
+  - "5.14"
+before_install:
+  - cpanm --notest --quiet Dist::Zilla
+  - dzil authordeps | cpanm --notest --quiet
+  - cpanm --notest --quiet Pod::Coverage::TrustPod
+install:
+  - dzil listdeps | cpanm --notest --quiet
+script:
+  - dzil test --release --verbose
