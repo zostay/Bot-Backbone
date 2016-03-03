@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.160630  2016-03-03 16:48:52-06:00 America/Chicago
+
     * Bot::Backbone::Service::JabberChat has been moved to a separate release
       for installation.
     * Bot::Backbone::Service::IRChat has been moved to a separate release for
