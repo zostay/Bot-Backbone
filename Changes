@@ -1,5 +1,16 @@
 {{$NEXT}}
 
+    * Bot::Backbone::Service::JabberChat has been moved to a separate release
+      for installation.
+    * Bot::Backbone::Service::IRChat has been moved to a separate release for
+      installation.
+    * To make effective use of this bot framework, you probably want to install
+      one of the chat engine services: JabberChat, IRChat, or SlackChat. If you
+      just want to play with a command-line bot, then you can just install this
+      module by itself and use ConsoleChat.
+
+0.142820  2014-10-09 08:53:20CDT-0500 America/Chicago
+
     * Added Bot::Backbone::Service::IRChat which enables bots using the service
       to connect to IRC servers.
     * Tweaked the "is_to_me" method of Bot::Backbone::Service::JabberChat to

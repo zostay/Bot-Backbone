@@ -60,10 +60,10 @@ use Bot::Backbone::Dispatcher;
       command '!time' => respond { DateTime->now->format_cldr('ddd, MMM d, yyyy @ hh:mm:ss') };
 
       # Basic echo command, with arguments
-      command '!echo' => given_parameters { 
-          argument echo_this => ( matching => qr/.*/ ); 
+      command '!echo' => given_parameters {
+          argument echo_this => ( matching => qr/.*/ );
       } respond {
-          my ($self, $message) = @_; 
+          my ($self, $message) = @_;
           $message->arguments->{echo_this};
       };
 
@@ -93,7 +93,7 @@ use Bot::Backbone::Dispatcher;
       #  - not_command: but not if a command matched
       #  - not_to_me: but not if addressed to me
       #  - run: run this code, but do not respond
-      also not_command not_to_me run_this { 
+      also not_command not_to_me run_this {
           my ($self, $message) = @_;
           $self->megahal->learn($message->text);
       };
@@ -105,10 +105,10 @@ use Bot::Backbone::Dispatcher;
 =head1 DESCRIPTION
 
 Bots should be easy to build. Also a bot framework does not need to be tied to a
-particular protocol (e.g., IRC, Jabber, etc.). However, most bot tools fail at
-either of these. Finally, it should be possible to create generic services that
-a bot can consume or share with other bots. This framework aims at solving all
-of these.
+particular protocol (e.g., IRC, Jabber, Slack, etc.). However, most bot tools
+fail at either of these. Finally, it should be possible to create generic
+services that a bot can consume or share with other bots. This framework aims at
+solving all of these.
 
 This framework provides the following tools to this end.
 
@@ -122,9 +122,9 @@ independent of the rest. Here are some examples of possible services:
 =item Chat Service
 
 Each chat server connects to a chat service. This might be a Jabber server or an
-IRC server or even just a local REPL for running commands on the console. A
-single bot may have multiple connections to these servers by running more than
-one chat service.
+IRC server or Slack or even just a local REPL for running commands on the
+console. A single bot may have multiple connections to these servers by running
+more than one chat service.
 
 See L<Bot::Backbone::Service::JabberChat> and
 L<Bot::Backbone::Service::ConsoleChat> for examples.
@@ -197,7 +197,7 @@ Setup the bot package with L<Bot::Backbone::Meta::Class> as the meta class and L
 
 sub init_meta {
     shift;
-    return Moose->init_meta(@_, 
+    return Moose->init_meta(@_,
         base_class => 'Bot::Backbone::Bot',
         metaclass  => 'Bot::Backbone::Meta::Class::Bot',
     );
@@ -276,7 +276,7 @@ attribute on services that support dispatching.
 
 =cut
 
-sub dispatcher($$) { 
+sub dispatcher($$) {
     my ($meta, $name, $code) = @_;
 
     my $dispatcher = Bot::Backbone::Dispatcher->new;
@@ -318,7 +318,7 @@ if no command has been matched so far for the current message.
   given_parameters { parameter $name => %config; ... } ...
 
 This is used in conjunction with C<parameter> to define arguments expected to
-come next. 
+come next.
 
 If the C<given_parameters> predicate matches completely, the message will have
 each of the named parameters set on the C<parameters> hash inside the nested
@@ -339,7 +339,7 @@ move on to the next dispatch predicate.
 
 Rather than matching the next command-line split chunk of the input, this
 matches some next portion of the string. If it matches or there is a default
-provided, success. 
+provided, success.
 
 =item default
 

@@ -14,3 +14,17 @@ The preferred installation would be to fetch it from CPAN:
 or if you don't have App::cpanminus installed (you should), you can run:
 
     perl -MCPAN -e 'install Bot::Backbone'
+
+You will very likely want to install one of these modules as well:
+
+    cpanm Bot::Backbone::Service::IRChat
+    cpanm Bot::Backbone::Service::JabberChat
+    cpanm Bot::Backbone::Service::SlackChat
+
+These will allow your bot to be configured to talk to servers running one of
+those chat protocols.
+
+For an example on how to write a chatbot using this framework, you should see
+Tuesday, a chatbot maintained by the author:
+
+    https://github.com/zostay/Tuesday

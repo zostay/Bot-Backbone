@@ -13,8 +13,27 @@ use Bot::Backbone::SendPolicy::Aggregate;
 
 A chat service is one that sends and receives messages to other entities.
 
-See L<Bot::Backbone::Service::ConsoleChat> and
-L<Bot::Backbone::Service::JabberChat>.
+See the following implementations:
+
+=over
+
+=item *
+
+L<Bot::Backbone::Service::ConsoleChat>
+
+=item *
+
+L<Bot::Backbone::Service::JabberChat>
+
+=item *
+
+L<Bot::Backbone::Service::IRChat>
+
+=item *
+
+L<Bot::Backbone::Service::SlackChat>
+
+=back
 
 =head1 ATTRIBUTES
 
@@ -63,7 +82,7 @@ If both C<group> and C<to> are passed, the preference should be to send to the C
 
 This role also provides a wrapper around your chat's implementation of
 C<send_message>, which will apply the current service's send policy to the
-message. The most restrictive send policy encountered at any point will win. 
+message. The most restrictive send policy encountered at any point will win.
 
 A send policy may be explicitly provided by setting the C<send_policy> setting
 in the parameters to a L<Bot::Backbone::SendPolicy> object. Missing this
