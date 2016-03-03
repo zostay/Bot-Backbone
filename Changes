@@ -8,6 +8,7 @@
       one of the chat engine services: JabberChat, IRChat, or SlackChat. If you
       just want to play with a command-line bot, then you can just install this
       module by itself and use ConsoleChat.
+    * Removed the examples in eg... they were red herrings.
 
 0.142820  2014-10-09 08:53:20CDT-0500 America/Chicago
 
