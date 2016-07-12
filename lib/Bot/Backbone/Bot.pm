@@ -58,11 +58,26 @@ has services => (
     traits      => [ 'Hash' ],
     handles     => {
         add_service      => 'set',
+        service_names    => 'keys',
         list_services    => 'values',
         destroy_services => 'clear',
         has_service      => 'defined',
         get_service      => 'get',
     },
+);
+
+=head2 initialized_services
+
+This is a set containing the names of all the services that have been
+constructed and initialized.
+
+=cut
+
+has initialized_services => (
+    is          => 'ro',
+    isa         => 'HashRef[Bool]',
+    required    => 1,
+    default     => sub { +{} },
 );
 
 =head1 METHODS
@@ -105,6 +120,27 @@ sub construct_services {
     }
 }
 
+=head2 initialize_services
+
+  $bot->initialize_services;
+
+If more services are added to the bot later, this method may be called to initialize services after the new services have been constructed.
+
+=cut
+
+sub initialize_services {
+  my $self = shift;
+
+    for my $name ($self->service_names) {
+        next if $self->initialized_services->{ $name };
+
+        $self->initialized_services->{ $name }++;
+
+        my $service = $self->get_service($name);
+        $service->initialize;
+    }
+}
+
 =head2 run
 
   $bot->run;
@@ -119,7 +155,7 @@ sub run {
     my $self = shift;
 
     $self->construct_services;
-    $_->initialize for ($self->list_services);
+    $self->initialize_services;
 
     $self->event_loop->run;
 }
