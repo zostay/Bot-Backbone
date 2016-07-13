@@ -100,12 +100,48 @@ You may run this prior to L</run> to construct your services prior to running. N
 
 =cut
 
+sub _ordered_services {
+    my $self = shift;
+
+    my %forest;
+    for my $pair ($self->meta->services_kv) {
+        my ($name, $config) = @$pair;
+
+        if ($config->{service}->does('Bot::Backbone::Service::Role::ChatConsumer')) {
+            $forest{ $name } = $config->{chat};
+        }
+        else {
+            $forest{ $name } = undef;
+        }
+    }
+
+    my @names;
+    for my $name (keys %forest) {
+        if (defined $forest{ $name }) {
+            my $depth = 1;
+            my $next_name = $forest{ $name };
+            while (defined($next_name = $forest{ $next_name })) {
+                $depth++;
+            }
+
+            $forest{ $name } = $depth;
+        }
+        else {
+            $forest{ $name } = 0;
+        }
+    }
+
+    return sort { $forest{ $a } <=> $forest{ $b } } keys %forest;
+}
+
 sub construct_services {
     my $self = shift;
 
     my $my_name = $self->meta->name;
 
-    for my $name ($self->meta->list_services) {
+    my @names = $self->_ordered_services;
+
+    for my $name ($self->_ordered_services) {
         my $service_config = $self->meta->services->{$name};
         next if defined $self->services->{$name};
 

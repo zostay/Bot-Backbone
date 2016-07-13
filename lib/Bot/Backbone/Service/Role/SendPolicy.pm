@@ -24,7 +24,7 @@ with 'Bot::Backbone::Service::Role::Sender';
   sub send_message {
       my ($self, $params) = @_;
 
-      my @chats = grep { $_->does('Bot::Backbone::Service::Role::Chat') } 
+      my @chats = grep { $_->does('Bot::Backbone::Service::Role::Chat') }
                          $self->bot->list_services;
 
       my ($chat) = shuffle @chats;
@@ -63,7 +63,7 @@ has send_policy_name => (
 =head2 send_policy
 
 This is the L<Bot::Backbone::SendPolicy> that has been selected for this
-service. 
+service.
 
 =cut
 
@@ -119,7 +119,7 @@ around send_message => sub {
     return unless $send_policy_result->{allow};
 
     # If this is a bare metal chat... then apply any required delay
-    if (($send_policy_result->{after} // 0) > 0 
+    if (($send_policy_result->{after} // 0) > 0
             and $self->does('Bot::Backbone::Service::Role::BareMetalChat')) {
 
         # Setting Timer

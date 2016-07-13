@@ -34,7 +34,7 @@ This provides the metaclass features needed for each bot and allow some introspe
 
 L<Moose::Meta::Class>
 
-=head1 ATTRIBUTES 
+=head1 ATTRIBUTES
 
 =head2 send_policies
 
@@ -69,6 +69,7 @@ has services => (
     handles     => {
         add_service   => 'set',
         list_services => 'keys',
+        services_kv   => 'kv',
     },
 );
 
