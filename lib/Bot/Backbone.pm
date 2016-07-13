@@ -61,7 +61,7 @@ use Bot::Backbone::Dispatcher;
 
       # Basic echo command, with arguments
       command '!echo' => given_parameters {
-          argument echo_this => ( matching => qr/.*/ );
+          parameter echo_this => ( matching => qr/.*/ );
       } respond {
           my ($self, $message) = @_;
           $message->arguments->{echo_this};
