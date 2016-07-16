@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    * The reply() method of Bot::Backbone::Message now allows hashes to be used
+      in replies as well as strings.
+
 0.161950  2016-07-13 13:40:36-05:00 America/Chicago
 
     * Added the initialize_services method to Bot::Backbone::Bot.

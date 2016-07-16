@@ -130,8 +130,8 @@ has text => (
     use Moose;
 
     has [ qw( text original ) ] => (
-        is       => 'rw', 
-        isa      => 'Str', 
+        is       => 'rw',
+        isa      => 'Str',
         required => 1,
     );
 
@@ -217,7 +217,7 @@ sub _build_args {
         }
 
         # Handle word breaks: non-quote chars
-        elsif (not defined $quote_mark and $original  =~ /\S\s+/ 
+        elsif (not defined $quote_mark and $original  =~ /\S\s+/
                                        and $next_char =~ /\S/) {
 
             push @args, Bot::Backbone::Message::Arg->new(
@@ -360,7 +360,7 @@ named are not set.
 
 =cut
 
-sub add_flag     { my $self = shift; $self->flags->{$_} = 1 for @_ } 
+sub add_flag     { my $self = shift; $self->flags->{$_} = 1 for @_ }
 sub add_flags    { my $self = shift; $self->flags->{$_} = 1 for @_ }
 sub remove_flag  { my $self = shift; delete $self->flags->{$_} for @_ }
 sub remove_flags { my $self = shift; delete $self->flags->{$_} for @_ }
@@ -399,7 +399,7 @@ sub set_bookmark {
         text       => $self->text,
         parameters => { %{ $self->parameters } },
     );
-    $bookmark->args([ map { $_->clone } @{ $self->args } ]) 
+    $bookmark->args([ map { $_->clone } @{ $self->args } ])
         if $self->has_args;
     $self->_set_bookmark($bookmark);
     return;
@@ -424,7 +424,7 @@ sub restore_bookmark {
     $self->from($bookmark->from);
     $self->group($bookmark->group);
     $self->text($bookmark->text);
-    $self->args($bookmark->args) 
+    $self->args($bookmark->args)
         if $self->has_args or $bookmark->has_args;
     $self->parameters({ %{ $bookmark->parameters } });
     return;
@@ -506,6 +506,10 @@ sub match_next_original {
 =head2 reply
 
   $message->reply($sender, 'blah blah blah');
+  $message->reply($sender, {
+      text       => 'blah blah blah',
+      attachment => 'foo bar baz',
+  });
 
 Sends a reply back to the entity sending the message or the group that sent it,
 using the chat service that created the message.
@@ -515,25 +519,34 @@ L<Bot::Backbone::Bot>, which should be the service or bot sending the reply. The
 send policy set for that sender will be applied. You may pass C<undef> or
 anything else as the sender, but a warning will be issued.
 
+The second argument is the message to reply with. This may either be a string or
+a hash. The string is a shortcut for using a hash and setting the "text" key.
+For example, these two calls work identically:
+
+  $message->reply($sender, "abc");
+  $message->reply($sender, { text => "abc" });
+
 =cut
 
 sub reply {
-    my ($self, $sender, $text) = @_;
+    my ($self, $sender, $arg) = @_;
 
-    if (defined $sender and blessed $sender 
+    $arg = { text => $arg } unless ref $arg;
+
+    if (defined $sender and blessed $sender
            and $sender->does('Bot::Backbone::Service::Role::Sender')) {
 
-        $sender->send_reply($self, { text => $text });
+        $sender->send_reply($self, $arg);
     }
-    elsif (defined $sender and blessed $sender 
+    elsif (defined $sender and blessed $sender
             and $sender->isa('Bot::Backbone::Bot')) {
 
         # No warning... hmm...
-        $self->chat->send_reply($self, { text => $text });
+        $self->chat->send_reply($self, $arg);
     }
     else {
         warn "Sender given is not a sender service or a bot: $sender\n";
-        $self->chat->send_reply($self, { text => $text });
+        $self->chat->send_reply($self, $arg);
     }
 }
 
